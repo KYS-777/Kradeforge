@@ -2,8 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KradeForge — Trade Journal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0a0b0d" />
+  <title>KradeForge — Advanced Trading Journal</title>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
@@ -296,9 +300,26 @@
             <div class="drop-title">Drop your broker export here</div>
             <div class="drop-sub">Supports CSV, XLSX, XLS — auto-detects broker format</div>
             <div class="drop-formats">
-              <span>Interactive Brokers</span><span>TD Ameritrade</span><span>E*TRADE</span>
-              <span>Robinhood</span><span>Webull</span><span>Tastytrade</span>
-              <span>Schwab</span><span>Fidelity</span><span>TradeStation</span>
+              <span class="fmt-highlight">Exness MT5</span>
+              <span class="fmt-highlight">Exness MT4</span>
+              <span class="fmt-highlight">MetaTrader 4</span>
+              <span class="fmt-highlight">MetaTrader 5</span>
+              <span>OANDA</span>
+              <span>Plus500</span>
+              <span>eToro</span>
+              <span>Capital.com</span>
+              <span>Deriv</span>
+              <span>Binance</span>
+              <span>Bybit</span>
+              <span>Interactive Brokers</span>
+              <span>TD Ameritrade</span>
+              <span>Schwab</span>
+              <span>E*TRADE</span>
+              <span>Robinhood</span>
+              <span>Webull</span>
+              <span>Tastytrade</span>
+              <span>Fidelity</span>
+              <span>TradeStation</span>
               <span>Generic CSV</span>
             </div>
             <label class="btn-browse">
@@ -333,59 +354,114 @@
         <div class="manual-section">
           <h2>Or Add Manually</h2>
           <div class="manual-form" id="manualForm">
+
+            <!-- ROW 1: Symbol, Side, Qty/Lots -->
             <div class="form-row">
               <div class="form-group">
-                <label>Symbol *</label>
-                <input type="text" id="mSymbol" placeholder="AAPL" />
+                <label>Symbol <span class="req">*</span></label>
+                <input type="text" id="mSymbol" placeholder="XAU/USD, AAPL, BTC/USD…" autocomplete="off" />
               </div>
               <div class="form-group">
-                <label>Side *</label>
-                <select id="mSide"><option value="LONG">Long</option><option value="SHORT">Short</option></select>
+                <label>Side <span class="req">*</span></label>
+                <select id="mSide">
+                  <option value="LONG">📈 Long (Buy)</option>
+                  <option value="SHORT">📉 Short (Sell)</option>
+                </select>
               </div>
               <div class="form-group">
-                <label>Qty *</label>
-                <input type="number" id="mQty" placeholder="100" min="0" step="any" />
+                <label>Qty / Lots <span class="req">*</span></label>
+                <input type="number" id="mQty" placeholder="0.01" min="0" step="any" />
               </div>
             </div>
+
+            <!-- ROW 2: Entry, Exit, P&L (auto-calculated) -->
             <div class="form-row">
               <div class="form-group">
-                <label>Entry Price *</label>
-                <input type="number" id="mEntry" placeholder="0.00" step="any" />
+                <label>Entry Price <span class="req">*</span></label>
+                <input type="number" id="mEntry" placeholder="0.000" step="any" oninput="App.calcManualPnl()" />
               </div>
               <div class="form-group">
-                <label>Exit Price *</label>
-                <input type="number" id="mExit" placeholder="0.00" step="any" />
+                <label>Exit Price</label>
+                <input type="number" id="mExit" placeholder="0.000" step="any" oninput="App.calcManualPnl()" />
               </div>
               <div class="form-group">
-                <label>Stop Loss</label>
-                <input type="number" id="mStop" placeholder="0.00" step="any" />
+                <label>P&amp;L (auto)</label>
+                <input type="text" id="mPnlPreview" placeholder="Fills automatically" readonly
+                  style="cursor:default;background:var(--bg4);font-family:var(--font-mono);font-weight:700" />
               </div>
             </div>
+
+            <!-- ROW 3: Stop Loss, Take Profit, Commission -->
             <div class="form-row">
               <div class="form-group">
-                <label>Entry Date/Time *</label>
+                <label>🛑 Stop Loss</label>
+                <input type="number" id="mStop" placeholder="0.000" step="any"
+                  style="border-color:rgba(255,77,106,0.4)"
+                  oninput="App.calcManualPnl()" />
+                <span class="field-hint" id="mRiskHint"></span>
+              </div>
+              <div class="form-group">
+                <label>🎯 Take Profit</label>
+                <input type="number" id="mTP" placeholder="0.000" step="any"
+                  style="border-color:rgba(34,199,122,0.4)"
+                  oninput="App.calcManualPnl()" />
+                <span class="field-hint" id="mRewardHint"></span>
+              </div>
+              <div class="form-group">
+                <label>Commission / Swap</label>
+                <input type="number" id="mCommission" placeholder="0.00" step="any" oninput="App.calcManualPnl()" />
+              </div>
+            </div>
+
+            <!-- ROW 4: Entry time, Exit time -->
+            <div class="form-row">
+              <div class="form-group">
+                <label>Entry Date &amp; Time <span class="req">*</span></label>
                 <input type="datetime-local" id="mEntryDt" />
               </div>
               <div class="form-group">
-                <label>Exit Date/Time</label>
+                <label>Exit Date &amp; Time</label>
                 <input type="datetime-local" id="mExitDt" />
               </div>
               <div class="form-group">
-                <label>Commission</label>
-                <input type="number" id="mCommission" placeholder="0.00" step="any" />
+                <label>Result</label>
+                <select id="mResult">
+                  <option value="">Auto-detect</option>
+                  <option value="WIN">✅ Win</option>
+                  <option value="LOSS">❌ Loss</option>
+                  <option value="EVEN">➖ Breakeven</option>
+                </select>
               </div>
             </div>
+
+            <!-- ROW 5: Notes, Tags -->
             <div class="form-row">
               <div class="form-group wide">
-                <label>Notes</label>
-                <textarea id="mNotes" rows="3" placeholder="Setup, reasoning, lessons learned…"></textarea>
+                <label>Notes / Journal</label>
+                <textarea id="mNotes" rows="3"
+                  placeholder="Setup description, entry reason, what you learned…"></textarea>
               </div>
               <div class="form-group">
                 <label>Tags</label>
-                <input type="text" id="mTags" placeholder="breakout, earnings, gap" />
+                <input type="text" id="mTags" placeholder="breakout, news, scalp, swing" />
               </div>
             </div>
-            <button class="btn-primary" id="submitManualBtn">Add Trade</button>
+
+            <!-- R:R Preview -->
+            <div class="rr-preview" id="rrPreview" style="display:none">
+              <span class="rr-item">Risk: <strong id="rrRisk">—</strong></span>
+              <span class="rr-sep">|</span>
+              <span class="rr-item">Reward: <strong id="rrReward">—</strong></span>
+              <span class="rr-sep">|</span>
+              <span class="rr-item">R:R Ratio: <strong id="rrRatio">—</strong></span>
+            </div>
+
+            <div style="display:flex;gap:12px;align-items:center;margin-top:4px">
+              <button class="btn-primary" id="submitManualBtn">＋ Add Trade</button>
+              <button class="btn-secondary" id="clearManualBtn" type="button">Clear Form</button>
+              <span class="req-note"><span class="req">*</span> Required fields</span>
+            </div>
+
           </div>
         </div>
       </section>
