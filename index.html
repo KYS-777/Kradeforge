@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#0a0b0d" />
-  <title>KradeForge Trading Journal</title>
+  <title>KradeForge — Advanced Trading Journal</title>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
@@ -66,6 +66,9 @@
     </div>
   </aside>
 
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
   <!-- MAIN CONTENT -->
   <main class="main-content">
     <!-- TOPBAR -->
@@ -73,7 +76,7 @@
       <button class="menu-toggle" id="menuToggle">☰</button>
       <div class="topbar-title" id="topbarTitle">Dashboard</div>
       <div class="topbar-right">
-        <div class="account-balance-pill">
+        <div class="account-balance-pill" id="balancePill" title="Click to set starting balance">
           <div class="pill-inner">
             <div class="pill-row">
               <span class="pill-label">Balance</span>
@@ -81,7 +84,7 @@
             </div>
             <span class="pill-value" id="topbarBalance">$0.00</span>
             <div class="pill-row">
-              <span class="pill-pnl-label">Today P&amp;L:</span>
+              <span class="pill-pnl-label">P&amp;L:</span>
               <span class="pill-pnl" id="topbarDayPnl">$0.00</span>
             </div>
           </div>
@@ -509,6 +512,43 @@
         <button class="modal-close" id="modalClose">✕</button>
       </div>
       <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- BALANCE SETTINGS MODAL -->
+  <div class="modal-overlay" id="balanceModal" style="display:none">
+    <div class="modal" style="max-width:360px">
+      <div class="modal-header">
+        <h2>💰 Set Starting Balance</h2>
+        <button class="modal-close" id="balanceModalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="color:var(--text2);font-size:13px;margin-bottom:18px;line-height:1.6">
+          Enter your account starting balance. KradeForge will automatically 
+          add or subtract your trade P&L to show your current balance.
+        </p>
+        <div class="form-group" style="margin-bottom:18px">
+          <label>Starting Balance (USD)</label>
+          <input type="number" id="startingBalanceInput" 
+            placeholder="e.g. 10000" step="0.01" min="0"
+            style="font-size:18px;font-family:var(--font-mono);font-weight:700;color:#8bb8d4" />
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:18px;font-size:12px;color:var(--text2)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span>Starting Balance:</span>
+            <span id="bm_starting" style="font-family:var(--font-mono);color:var(--text)">$0.00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span>Total P&L:</span>
+            <span id="bm_pnl" style="font-family:var(--font-mono)">$0.00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:8px;font-weight:700">
+            <span>Current Balance:</span>
+            <span id="bm_current" style="font-family:var(--font-mono);color:#8bb8d4">$0.00</span>
+          </div>
+        </div>
+        <button class="btn-primary" id="saveBalanceBtn" style="width:100%">Save Balance</button>
+      </div>
     </div>
   </div>
 
