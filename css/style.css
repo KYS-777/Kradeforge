@@ -756,6 +756,13 @@ canvas { max-height: 220px; }
   font-size: 11px;
   color: var(--text2);
 }
+/* Highlighted broker badges — primary/confirmed brokers */
+.drop-formats .fmt-highlight {
+  background: rgba(139,184,212,0.08);
+  border-color: rgba(139,184,212,0.3);
+  color: #8bb8d4;
+  font-weight: 600;
+}
 .btn-browse {
   background: var(--accent);
   color: #000;
@@ -1209,33 +1216,283 @@ canvas { max-height: 220px; }
 .empty-state p { font-size: 14px; }
 
 /* ── RESPONSIVE ── */
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE — TABLET (max 1100px)
+   ══════════════════════════════════════════════════════════ */
 @media (max-width: 1100px) {
-  .analytics-grid { grid-template-columns: repeat(2, 1fr); }
-  .charts-row:last-of-type { grid-template-columns: repeat(2, 1fr); }
+  .analytics-grid              { grid-template-columns: repeat(2, 1fr); }
+  .charts-row:last-of-type     { grid-template-columns: repeat(2, 1fr); }
+  .stats-grid                  { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE — TABLET SMALL / LARGE PHONE (max 900px)
+   ══════════════════════════════════════════════════════════ */
 @media (max-width: 900px) {
+  /* Sidebar — hidden by default, slides in on toggle */
   :root { --sidebar-w: 0px; }
   .sidebar {
     transform: translateX(-220px);
     width: 220px;
+    z-index: 300;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.6);
   }
-  .sidebar.open {
-    transform: none;
-    width: 220px;
+  .sidebar.open { transform: none; }
+
+  /* Overlay when sidebar is open */
+  .sidebar.open::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    left: 220px;
+    background: rgba(0,0,0,0.5);
+    z-index: -1;
   }
-  .main-content { margin-left: 0; }
-  .menu-toggle { display: block; }
-  .import-hero { grid-template-columns: 1fr; }
-  .notes-container { grid-template-columns: 1fr; grid-template-rows: 200px 1fr; height: auto; }
-  .charts-row { grid-template-columns: 1fr; }
-  .analytics-grid { grid-template-columns: 1fr; }
-  .form-row { grid-template-columns: repeat(2, 1fr); }
+
+  .main-content  { margin-left: 0; }
+  .menu-toggle   { display: block; }
+
+  /* Topbar */
+  .topbar        { padding: 0 16px; gap: 10px; }
+  .topbar-title  { font-size: 14px; }
+  .add-trade-btn { padding: 7px 12px; font-size: 12px; }
+
+  /* Balance pill — compact */
+  .account-balance-pill { min-width: 120px; padding: 5px 10px; }
+  .pill-value            { font-size: 14px; }
+
+  /* Pages */
+  .page          { padding: 16px; }
+  .page-header   { gap: 10px; }
+  .page-header h1{ font-size: 18px; }
+
+  /* Stats grid — 2 columns */
+  .stats-grid    { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-value    { font-size: 18px; }
+
+  /* Charts — single column */
+  .charts-row                  { grid-template-columns: 1fr; }
+  .charts-row:last-of-type     { grid-template-columns: 1fr; }
+  .analytics-grid              { grid-template-columns: 1fr; }
+
+  /* Import */
+  .import-hero   { grid-template-columns: 1fr; }
+
+  /* Notes */
+  .notes-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: 200px 1fr;
+    height: auto;
+  }
+
+  /* Forms */
+  .form-row      { grid-template-columns: repeat(2, 1fr); }
+  .form-group.wide { grid-column: span 2; }
+
+  /* Log controls — wrap */
+  .log-controls  { gap: 8px; }
+  .search-input  { min-width: 140px; }
+
+  /* Calendar */
+  .cal-day       { min-height: 60px; padding: 5px; }
+  .cal-day-pnl   { font-size: 10px; }
+  .cal-day-trades{ display: none; }
+
+  /* Cal detail panel */
+  .cal-day-detail {
+    position: fixed;
+    left: 12px; right: 12px;
+    top: auto; bottom: 12px;
+    width: auto;
+    max-height: 50vh;
+  }
 }
 
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE PHONE (max 600px)
+   ══════════════════════════════════════════════════════════ */
 @media (max-width: 600px) {
-  .page { padding: 16px; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .form-row { grid-template-columns: 1fr; }
-  .modal-detail-grid { grid-template-columns: repeat(2, 1fr); }
+  /* Root font size down slightly */
+  html { font-size: 13px; }
+
+  /* Pages — tight padding */
+  .page        { padding: 12px; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .page-header h1 { font-size: 17px; }
+
+  /* Topbar — compact */
+  .topbar      { padding: 0 12px; height: 54px; }
+  .topbar-title{ font-size: 13px; }
+
+  /* Balance pill — show only balance, hide today P&L label on very small */
+  .pill-pnl-label { display: none; }
+  .pill-value      { font-size: 13px; }
+  .pill-currency   { display: none; }
+  .account-balance-pill { min-width: 90px; padding: 4px 8px; }
+
+  /* Add Trade button — icon only on very small */
+  .add-trade-btn { padding: 6px 10px; font-size: 11px; }
+
+  /* Logo — compact */
+  .logo-name    { font-size: 14px; }
+  .logo-tagline { display: none; }
+  .logo-kradeforge svg { width: 28px; height: 28px; }
+
+  /* Stats — 2 columns, smaller */
+  .stats-grid   { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .stat-card    { padding: 12px 14px; }
+  .stat-value   { font-size: 16px; }
+  .stat-sub     { font-size: 10px; }
+  .stat-label   { font-size: 10px; }
+
+  /* Date filter — scrollable row */
+  .date-filter  {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    width: 100%;
+  }
+  .date-filter::-webkit-scrollbar { display: none; }
+  .dfilter      { white-space: nowrap; flex-shrink: 0; padding: 4px 10px; font-size: 11px; }
+
+  /* Charts */
+  canvas        { max-height: 180px !important; }
+  .chart-card   { padding: 14px; }
+  .chart-title  { font-size: 11px; margin-bottom: 10px; }
+
+  /* Trade log controls — stack */
+  .log-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .search-input  { width: 100%; min-width: unset; }
+  .filter-select { width: 100%; }
+
+  /* Trade table — scrollable, compact text */
+  .trades-table-wrap { border-radius: 8px; }
+  .trades-table th,
+  .trades-table td   { padding: 8px 10px; font-size: 11px; }
+
+  /* Hide less important columns on mobile */
+  .trades-table th:nth-child(9),  /* Duration */
+  .trades-table td:nth-child(9),
+  .trades-table th:nth-child(10), /* Notes */
+  .trades-table td:nth-child(10)  { display: none; }
+
+  /* Forms — single column */
+  .form-row      { grid-template-columns: 1fr; gap: 10px; }
+  .form-group.wide { grid-column: span 1; }
+  .manual-form   { padding: 14px; }
+
+  /* R:R preview — wrap */
+  .rr-preview    { gap: 8px; font-size: 12px; padding: 8px 12px; }
+  .rr-sep        { display: none; }
+
+  /* Import drop zone */
+  .drop-zone     { padding: 28px 16px; }
+  .drop-icon     { font-size: 36px; }
+  .drop-title    { font-size: 16px; }
+  .drop-formats  { gap: 4px; }
+  .drop-formats span { font-size: 10px; padding: 2px 7px; }
+
+  /* Modal — full screen on mobile */
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal {
+    border-radius: 16px 16px 0 0;
+    max-height: 90vh;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 100%;
+  }
+  .modal-detail-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .modal-body    { padding: 16px; }
+
+  /* Calendar — very compact */
+  .cal-day-header { font-size: 9px; padding: 4px 2px; }
+  .cal-day        { min-height: 48px; padding: 4px; border-radius: 5px; }
+  .cal-day-num    { font-size: 10px; }
+  .cal-day-pnl    { font-size: 9px; }
+  .cal-nav        { gap: 10px; }
+  #calMonthLabel  { font-size: 14px; min-width: 120px; }
+
+  /* Notes */
+  .notes-container { grid-template-rows: 160px 1fr; }
+  .note-editor-active { padding: 14px; }
+  .note-title-input { font-size: 18px; }
+
+  /* Pagination */
+  .pagination    { gap: 4px; padding: 12px 0; }
+  .page-btn      { padding: 5px 10px; font-size: 12px; }
+
+  /* Sidebar — full width overlay on mobile */
+  .sidebar       { width: 85vw; max-width: 280px; }
+  .sidebar.open  { transform: none; }
+
+  /* Recent trades table — hide extra columns */
+  #recentTradesTable th:nth-child(8), /* R */
+  #recentTradesTable td:nth-child(8),
+  #recentTradesTable th:nth-child(4), /* Qty */
+  #recentTradesTable td:nth-child(4)  { display: none; }
+
+  /* Bottom action buttons in forms */
+  .note-actions  { flex-wrap: wrap; gap: 8px; }
+  .note-actions input { min-width: 100%; }
 }
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE — VERY SMALL PHONE (max 380px)
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 380px) {
+  .stats-grid    { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .stat-card     { padding: 10px; }
+  .stat-value    { font-size: 14px; }
+  .topbar-title  { display: none; }  /* hide title, show only logo area */
+  .page          { padding: 10px; }
+  .trades-table th,
+  .trades-table td { padding: 6px 8px; font-size: 10px; }
+  /* Hide qty column too */
+  .trades-table th:nth-child(4),
+  .trades-table td:nth-child(4) { display: none; }
+}
+
+/* ── MANUAL FORM ENHANCEMENTS ───────────────────────────── */
+
+/* Required field asterisk */
+.req { color: var(--red); font-size: 12px; }
+
+/* Small hint text under Stop Loss / TP */
+.field-hint {
+  display: block;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text3);
+  margin-top: 4px;
+  min-height: 14px;
+}
+
+/* Required note at bottom of form */
+.req-note {
+  font-size: 11px;
+  color: var(--text3);
+}
+
+/* R:R Ratio preview bar */
+.rr-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  margin-top: 4px;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+.rr-item { color: var(--text2); }
+.rr-item strong { color: var(--text); font-family: var(--font-mono); }
+.rr-sep { color: var(--border2); }
