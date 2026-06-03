@@ -63,19 +63,33 @@ const App = (() => {
       });
     });
 
+    // ── Sidebar toggle with overlay ──────────────────────
+    const sidebar        = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      sidebarOverlay.classList.add('show');
+      document.body.style.overflow = 'hidden'; // prevent background scroll
+    }
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      sidebarOverlay.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
     document.getElementById('menuToggle').addEventListener('click', () => {
-      document.getElementById('sidebar').classList.toggle('open');
+      sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
     });
 
-    // Close sidebar when tapping outside on mobile
-    document.getElementById('main-content') && document.addEventListener('click', (e) => {
-      const sidebar = document.getElementById('sidebar');
-      const toggle  = document.getElementById('menuToggle');
-      if (sidebar.classList.contains('open') &&
-          !sidebar.contains(e.target) &&
-          !toggle.contains(e.target)) {
-        sidebar.classList.remove('open');
-      }
+    // Close when tapping overlay
+    sidebarOverlay.addEventListener('click', closeSidebar);
+
+    // Close sidebar when navigating on mobile
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        if (window.innerWidth <= 900) closeSidebar();
+      });
     });
   }
 
@@ -127,6 +141,18 @@ const App = (() => {
     });
 
     document.getElementById('exportAllBtn').addEventListener('click', exportAll);
+
+    // ── Balance pill — click to open settings ────────────
+    document.getElementById('balancePill').addEventListener('click', openBalanceModal);
+    document.getElementById('balanceModalClose').addEventListener('click', closeBalanceModal);
+    document.getElementById('saveBalanceBtn').addEventListener('click', saveStartingBalance);
+    document.getElementById('balanceModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeBalanceModal();
+    });
+
+    // Live preview as user types
+    document.getElementById('startingBalanceInput').addEventListener('input', updateBalancePreview);
+
     document.getElementById('clearDataBtn').addEventListener('click', () => {
       if (confirm('Clear ALL trade data? This cannot be undone.')) {
         DataStore.clearAll();
@@ -144,34 +170,74 @@ const App = (() => {
   }
 
   // ── UPDATE BALANCE PILL ────────────────────────────────
-  // Shows running account balance (starting balance + all P&L)
-  // and today's P&L separately so the trader feels the day.
+  // Shows: starting balance + all P&L = current balance
+  // Also shows total P&L in green/red
   function updateBalancePill() {
     const trades   = DataStore.getTrades();
     const settings = DataStore.getSettings();
+    const start    = settings.accountBalance || 10000;
 
-    // Total net P&L across all trades
-    const netPnl = trades.reduce((s, t) => s + (t.pnl || 0), 0);
-    const balance = settings.accountBalance + netPnl;
+    // Total net P&L across ALL trades
+    const netPnl  = trades.reduce((s, t) => s + (t.pnl || 0), 0);
+    const balance = start + netPnl;
 
-    // Today's P&L — trades closed today only
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayPnl = trades
-      .filter(t => t.exitDate && new Date(t.exitDate) >= todayStart)
-      .reduce((s, t) => s + (t.pnl || 0), 0);
-
-    // Update balance — always show full USD value, no K compression for <$10K
+    // Update balance display
     const balEl = document.getElementById('topbarBalance');
-    if (balEl) balEl.textContent = '$' + balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (balEl) balEl.textContent = '$' + balance.toLocaleString('en-US', {
+      minimumFractionDigits: 2, maximumFractionDigits: 2
+    });
 
-    // Update today P&L with color
+    // Show total P&L (not just today — more useful)
     const dayEl = document.getElementById('topbarDayPnl');
     if (dayEl) {
-      const sign = todayPnl >= 0 ? '+' : '';
-      dayEl.textContent = sign + '$' + todayPnl.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      dayEl.className = 'pill-pnl ' + (todayPnl > 0 ? 'positive' : todayPnl < 0 ? 'negative' : '');
+      const sign = netPnl >= 0 ? '+' : '';
+      dayEl.textContent = sign + '$' + Math.abs(netPnl).toLocaleString('en-US', {
+        minimumFractionDigits: 2, maximumFractionDigits: 2
+      });
+      if (netPnl > 0) dayEl.textContent = '+$' + netPnl.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+      else if (netPnl < 0) dayEl.textContent = '-$' + Math.abs(netPnl).toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+      else dayEl.textContent = '$0.00';
+      dayEl.className = 'pill-pnl ' + (netPnl > 0 ? 'positive' : netPnl < 0 ? 'negative' : '');
     }
+  }
+
+  // ── BALANCE MODAL ─────────────────────────────────────
+  function openBalanceModal() {
+    const settings = DataStore.getSettings();
+    const input    = document.getElementById('startingBalanceInput');
+    input.value    = settings.accountBalance || 10000;
+    updateBalancePreview();
+    document.getElementById('balanceModal').style.display = 'flex';
+    input.focus();
+    input.select();
+  }
+
+  function closeBalanceModal() {
+    document.getElementById('balanceModal').style.display = 'none';
+  }
+
+  function updateBalancePreview() {
+    const val    = parseFloat(document.getElementById('startingBalanceInput').value) || 0;
+    const trades = DataStore.getTrades();
+    const netPnl = trades.reduce((s, t) => s + (t.pnl || 0), 0);
+    const curr   = val + netPnl;
+    const fmt    = (n) => (n >= 0 ? '+$' : '-$') + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+    const fmtAbs = (n) => '$' + n.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+
+    document.getElementById('bm_starting').textContent  = fmtAbs(val);
+    const pnlEl = document.getElementById('bm_pnl');
+    pnlEl.textContent = fmt(netPnl);
+    pnlEl.style.color = netPnl >= 0 ? 'var(--green)' : 'var(--red)';
+    document.getElementById('bm_current').textContent   = fmtAbs(curr);
+  }
+
+  function saveStartingBalance() {
+    const val = parseFloat(document.getElementById('startingBalanceInput').value);
+    if (isNaN(val) || val < 0) { UI.toast('Enter a valid amount', 'error'); return; }
+    DataStore.saveSettings({ accountBalance: val });
+    updateBalancePill();
+    closeBalanceModal();
+    UI.toast('Balance updated ✓', 'success');
   }
 
   // ── DASHBOARD ────────────────────────────────────────────
@@ -636,14 +702,14 @@ const App = (() => {
     const rewHint  = document.getElementById('mRewardHint');
 
     // ── P&L preview ───────────────────────────────────────
+    // Same formula as enrichTrade:
+    //   lots (qty < 10):   diff × qty × 100
+    //   shares (qty >= 10): diff × qty
     if (entry && exit && qty) {
       const isLots = qty < 10;
       const mult   = isLots ? 100 : 1;
-      let rawPnl   = side === 'LONG'
-        ? (exit - entry) * qty * mult
-        : (entry - exit) * qty * mult;
-      // For stocks (qty >= 10) don't multiply
-      if (!isLots) rawPnl = side === 'LONG' ? (exit - entry) * qty : (entry - exit) * qty;
+      const diff   = side === 'LONG' ? (exit - entry) : (entry - exit);
+      const rawPnl = diff * qty * mult;
       const netPnl = rawPnl - comm;
       pnlEl.value = (netPnl >= 0 ? '+' : '') + '$' + netPnl.toFixed(2);
       pnlEl.style.color = netPnl > 0 ? 'var(--green)' : netPnl < 0 ? 'var(--red)' : 'var(--text2)';
