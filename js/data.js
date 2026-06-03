@@ -225,11 +225,23 @@ const DataStore = (() => {
 
     // ── P&L Calculation ──────────────────────────────────
     // If broker already provided P&L (Exness/MT), trust it.
-    // Otherwise calculate from entry/exit/qty.
+    // Otherwise calculate from entry/exit/qty with correct multiplier.
+    //
+    // FOREX/GOLD LOTS (qty < 10):
+    //   P&L = price_diff × qty × 100
+    //   Example: XAU/USD SHORT 0.12 lots, move 16.47
+    //   = 16.47 × 0.12 × 100 = $197.64
+    //
+    // STOCKS/SHARES (qty >= 10):
+    //   P&L = price_diff × qty
+    //   Example: AAPL 100 shares, move $5
+    //   = 5 × 100 = $500
     if (t.pnl === undefined || t.pnl === null || isNaN(t.pnl)) {
-      let rawPnl = 0;
-      if (t.side === 'LONG')  rawPnl = (exit - entry) * qty;
-      if (t.side === 'SHORT') rawPnl = (entry - exit) * qty;
+      const isLots   = qty < 10;
+      const mult     = isLots ? 100 : 1;
+      let rawPnl     = 0;
+      if (t.side === 'LONG')  rawPnl = (exit - entry) * qty * mult;
+      if (t.side === 'SHORT') rawPnl = (entry - exit) * qty * mult;
       t.pnl = parseFloat((rawPnl - comm).toFixed(2));
     } else {
       t.pnl = parseFloat(parseFloat(t.pnl).toFixed(2));
