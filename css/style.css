@@ -199,12 +199,14 @@ body {
 .account-balance-pill {
   background: var(--bg3);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 7px 16px;
-  min-width: 160px;
+  border-radius: 8px;
+  padding: 5px 12px;
+  min-width: 130px;
+  max-width: 200px;
   position: relative;
   overflow: hidden;
   transition: border-color 0.2s;
+  cursor: pointer;
 }
 .account-balance-pill:hover { border-color: var(--border2); }
 
@@ -215,62 +217,62 @@ body {
   top: 0; left: 0; right: 0;
   height: 1px;
   background: linear-gradient(90deg, transparent, #8bb8d4, transparent);
-  opacity: 0.4;
+  opacity: 0.35;
 }
 
-.pill-inner { display: flex; flex-direction: column; gap: 2px; }
+.pill-inner { display: flex; flex-direction: column; gap: 1px; }
 
 /* Top row: label + currency badge */
 .pill-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 
 /* "Balance" label */
 .pill-label {
-  font-size: 9px;
+  font-size: 8px;
   color: var(--text3);
   text-transform: uppercase;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.12em;
   font-weight: 700;
 }
 
-/* USD currency badge */
+/* USD badge */
 .pill-currency {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   color: #8bb8d4;
   background: rgba(139,184,212,0.1);
   border: 1px solid rgba(139,184,212,0.2);
   border-radius: 3px;
-  padding: 1px 5px;
+  padding: 1px 4px;
 }
 
-/* Main balance value */
+/* Main balance value — medium size */
 .pill-value {
   font-family: var(--font-mono);
-  font-size: 17px;
+  font-size: 14px;
   color: #8bb8d4;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   line-height: 1.2;
 }
 
-/* "Today P&L:" label */
+/* Today P&L label */
 .pill-pnl-label {
-  font-size: 9px;
+  font-size: 8px;
   color: var(--text3);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
 }
 
-/* Today P&L value — colored green/red by JS */
+/* Today P&L value */
 .pill-pnl {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--text2);
 }
@@ -1229,27 +1231,34 @@ canvas { max-height: 220px; }
    RESPONSIVE — TABLET SMALL / LARGE PHONE (max 900px)
    ══════════════════════════════════════════════════════════ */
 @media (max-width: 900px) {
-  /* Sidebar — hidden by default, slides in on toggle */
+  /* Sidebar — hidden off-screen, slides in on toggle */
   :root { --sidebar-w: 0px; }
   .sidebar {
-    transform: translateX(-220px);
-    width: 220px;
-    z-index: 300;
-    box-shadow: 4px 0 24px rgba(0,0,0,0.6);
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    transform: translateX(-100%);
+    width: 240px;
+    z-index: 500;
+    box-shadow: 4px 0 32px rgba(0,0,0,0.8);
+    transition: transform 0.28s ease;
   }
-  .sidebar.open { transform: none; }
+  .sidebar.open {
+    transform: translateX(0);
+  }
 
-  /* Overlay when sidebar is open */
-  .sidebar.open::after {
-    content: '';
+  /* Dark overlay behind sidebar when open */
+  .sidebar-overlay {
+    display: none;
     position: fixed;
     inset: 0;
-    left: 220px;
-    background: rgba(0,0,0,0.5);
-    z-index: -1;
+    background: rgba(0,0,0,0.6);
+    z-index: 499;
+    backdrop-filter: blur(2px);
   }
+  .sidebar-overlay.show { display: block; }
 
-  .main-content  { margin-left: 0; }
+  /* Main content always full width */
+  .main-content  { margin-left: 0; width: 100%; }
   .menu-toggle   { display: block; }
 
   /* Topbar */
@@ -1257,9 +1266,9 @@ canvas { max-height: 220px; }
   .topbar-title  { font-size: 14px; }
   .add-trade-btn { padding: 7px 12px; font-size: 12px; }
 
-  /* Balance pill — compact */
-  .account-balance-pill { min-width: 120px; padding: 5px 10px; }
-  .pill-value            { font-size: 14px; }
+  /* Balance pill — compact on tablet */
+  .account-balance-pill { min-width: 100px; padding: 4px 8px; }
+  .pill-value            { font-size: 13px; }
 
   /* Pages */
   .page          { padding: 16px; }
