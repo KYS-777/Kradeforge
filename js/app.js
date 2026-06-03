@@ -66,6 +66,17 @@ const App = (() => {
     document.getElementById('menuToggle').addEventListener('click', () => {
       document.getElementById('sidebar').classList.toggle('open');
     });
+
+    // Close sidebar when tapping outside on mobile
+    document.getElementById('main-content') && document.addEventListener('click', (e) => {
+      const sidebar = document.getElementById('sidebar');
+      const toggle  = document.getElementById('menuToggle');
+      if (sidebar.classList.contains('open') &&
+          !sidebar.contains(e.target) &&
+          !toggle.contains(e.target)) {
+        sidebar.classList.remove('open');
+      }
+    });
   }
 
   function navigateTo(page) {
@@ -596,44 +607,133 @@ const App = (() => {
   }
 
   // ── MANUAL FORM ──────────────────────────────────────────
+  // ── MANUAL FORM SETUP ───────────────────────────────────
+  // Binds submit, clear buttons and live P&L calculator.
   function bindManualForm() {
     document.getElementById('submitManualBtn').addEventListener('click', submitManualTrade);
+    document.getElementById('clearManualBtn').addEventListener('click', clearManualForm);
   }
 
+  // ── LIVE P&L / R:R CALCULATOR ───────────────────────────
+  // Called on every input change in the manual form.
+  // Calculates and shows P&L preview and Risk:Reward ratio
+  // so the trader sees the numbers before submitting.
+  function calcManualPnl() {
+    const side  = document.getElementById('mSide').value;
+    const qty   = parseFloat(document.getElementById('mQty').value)   || 0;
+    const entry = parseFloat(document.getElementById('mEntry').value) || 0;
+    const exit  = parseFloat(document.getElementById('mExit').value)  || 0;
+    const sl    = parseFloat(document.getElementById('mStop').value)  || 0;
+    const tp    = parseFloat(document.getElementById('mTP').value)    || 0;
+    const comm  = parseFloat(document.getElementById('mCommission').value) || 0;
+
+    const pnlEl    = document.getElementById('mPnlPreview');
+    const rrPreview= document.getElementById('rrPreview');
+    const rrRisk   = document.getElementById('rrRisk');
+    const rrReward = document.getElementById('rrReward');
+    const rrRatio  = document.getElementById('rrRatio');
+    const riskHint = document.getElementById('mRiskHint');
+    const rewHint  = document.getElementById('mRewardHint');
+
+    // ── P&L preview ───────────────────────────────────────
+    if (entry && exit && qty) {
+      const isLots = qty < 10;
+      const mult   = isLots ? 100 : 1;
+      let rawPnl   = side === 'LONG'
+        ? (exit - entry) * qty * mult
+        : (entry - exit) * qty * mult;
+      // For stocks (qty >= 10) don't multiply
+      if (!isLots) rawPnl = side === 'LONG' ? (exit - entry) * qty : (entry - exit) * qty;
+      const netPnl = rawPnl - comm;
+      pnlEl.value = (netPnl >= 0 ? '+' : '') + '$' + netPnl.toFixed(2);
+      pnlEl.style.color = netPnl > 0 ? 'var(--green)' : netPnl < 0 ? 'var(--red)' : 'var(--text2)';
+    } else {
+      pnlEl.value = '';
+      pnlEl.style.color = 'var(--text2)';
+    }
+
+    // ── R:R Ratio preview ─────────────────────────────────
+    if (entry && sl && qty) {
+      const isLots  = qty < 10;
+      const mult    = isLots ? 100 : 1;
+      const riskPip = Math.abs(entry - sl);
+      const riskUSD = isLots ? riskPip * qty * mult : riskPip * qty;
+
+      riskHint.textContent = riskUSD > 0 ? 'Risk: $' + riskUSD.toFixed(2) : '';
+      rrRisk.textContent   = '$' + riskUSD.toFixed(2);
+
+      if (tp && entry) {
+        const rewPip  = Math.abs(tp - entry);
+        const rewUSD  = isLots ? rewPip * qty * mult : rewPip * qty;
+        const ratio   = riskUSD > 0 ? rewUSD / riskUSD : 0;
+        rewHint.textContent  = rewUSD > 0 ? 'Reward: $' + rewUSD.toFixed(2) : '';
+        rrReward.textContent = '$' + rewUSD.toFixed(2);
+        rrRatio.textContent  = ratio.toFixed(2) + ':1';
+        rrRatio.style.color  = ratio >= 2 ? 'var(--green)' : ratio >= 1 ? 'var(--accent)' : 'var(--red)';
+        rrPreview.style.display = 'flex';
+      } else {
+        rewHint.textContent  = '';
+        rrReward.textContent = '—';
+        rrRatio.textContent  = '—';
+        rrPreview.style.display = entry && sl ? 'flex' : 'none';
+      }
+    } else {
+      riskHint.textContent = '';
+      rewHint.textContent  = '';
+      rrPreview.style.display = 'none';
+    }
+  }
+
+  // ── CLEAR MANUAL FORM ────────────────────────────────────
+  function clearManualForm() {
+    ['mSymbol','mQty','mEntry','mExit','mStop','mTP',
+     'mEntryDt','mExitDt','mCommission','mNotes','mTags']
+      .forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('mSide').value   = 'LONG';
+    document.getElementById('mResult').value = '';
+    document.getElementById('mPnlPreview').value = '';
+    document.getElementById('rrPreview').style.display = 'none';
+    document.getElementById('mRiskHint').textContent  = '';
+    document.getElementById('mRewardHint').textContent = '';
+  }
+
+  // ── SUBMIT MANUAL TRADE ─────────────────────────────────
+  // Validates, enriches and saves a manually entered trade.
   function submitManualTrade() {
-    const symbol = document.getElementById('mSymbol').value.toUpperCase().trim();
-    const side = document.getElementById('mSide').value;
-    const qty = parseFloat(document.getElementById('mQty').value);
-    const entry = parseFloat(document.getElementById('mEntry').value);
-    const exit = parseFloat(document.getElementById('mExit').value);
-    const stop = parseFloat(document.getElementById('mStop').value) || undefined;
-    const entryDt = document.getElementById('mEntryDt').value;
-    const exitDt = document.getElementById('mExitDt').value;
+    const symbol = (document.getElementById('mSymbol').value || '').toUpperCase().trim();
+    const side   = document.getElementById('mSide').value;
+    const qty    = parseFloat(document.getElementById('mQty').value);
+    const entry  = parseFloat(document.getElementById('mEntry').value);
+    const exit   = parseFloat(document.getElementById('mExit').value);
+    const stop   = parseFloat(document.getElementById('mStop').value)  || undefined;
+    const tp     = parseFloat(document.getElementById('mTP').value)    || undefined;
+    const entryDt    = document.getElementById('mEntryDt').value;
+    const exitDt     = document.getElementById('mExitDt').value;
     const commission = parseFloat(document.getElementById('mCommission').value) || 0;
-    const notes = document.getElementById('mNotes').value;
-    const tagsRaw = document.getElementById('mTags').value;
+    const notes      = document.getElementById('mNotes').value;
+    const tagsRaw    = document.getElementById('mTags').value;
 
-    if (!symbol) { UI.toast('Symbol is required', 'error'); return; }
-    if (!qty || qty <= 0) { UI.toast('Quantity is required', 'error'); return; }
-    if (!entry) { UI.toast('Entry price is required', 'error'); return; }
-    if (!entryDt) { UI.toast('Entry date is required', 'error'); return; }
+    // ── Validation ────────────────────────────────────────
+    if (!symbol)       { UI.toast('Symbol is required', 'error');     return; }
+    if (!qty || qty<=0){ UI.toast('Quantity is required', 'error');   return; }
+    if (!entry)        { UI.toast('Entry price is required', 'error');return; }
+    if (!entryDt)      { UI.toast('Entry date is required', 'error'); return; }
 
+    // ── Build and save trade ──────────────────────────────
     const trade = DataStore.enrichTrade({
-      symbol, side, qty, entry, exit: exit || entry, stop,
+      symbol, side, qty, entry,
+      exit: exit || entry,
+      stop, tp,
       commission,
       entryDate: new Date(entryDt).toISOString(),
-      exitDate: exitDt ? new Date(exitDt).toISOString() : new Date(entryDt).toISOString(),
+      exitDate:  exitDt ? new Date(exitDt).toISOString() : new Date(entryDt).toISOString(),
       notes,
-      tags: tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : []
+      tags: tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : ['manual']
     });
 
     DataStore.addTrade(trade);
     UI.toast(`✓ Trade added: ${symbol}`, 'success');
-
-    // Reset form
-    ['mSymbol','mQty','mEntry','mExit','mStop','mEntryDt','mExitDt','mCommission','mNotes','mTags']
-      .forEach(id => { document.getElementById(id).value = ''; });
-
+    clearManualForm();
     refreshDashboard();
     updateBalancePill();
   }
@@ -773,7 +873,9 @@ const App = (() => {
     showCalDay,
     openNote,
     goToPage,
-    refreshDashboard
+    refreshDashboard,
+    calcManualPnl,
+    clearManualForm
   };
 })();
 
