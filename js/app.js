@@ -30,7 +30,25 @@ const App = (() => {
   let activeNoteId = null;
 
   // ── INIT ─────────────────────────────────────────────────
-  function init() {
+  // ── APP INIT ─────────────────────────────────────────────
+  async function init() {
+    // Check authentication first
+    const session = await SupabaseClient.restoreSession();
+    if (!session) {
+      // Not logged in — redirect to login page
+      window.location.href = 'login.html';
+      return;
+    }
+
+    // Save session and set online mode
+    localStorage.setItem('kf_session', JSON.stringify(session));
+    SupabaseClient.setSession(session);
+    CloudStore.setOnline(true);
+
+    // Load cloud data into DataStore
+    await loadCloudData();
+
+    // Setup UI
     bindNav();
     bindTopbar();
     bindImport();
@@ -39,12 +57,76 @@ const App = (() => {
     bindCalendar();
     bindNotes();
     bindModal();
+    bindUserMenu();
 
     refreshDashboard();
     renderNotesList();
-
-    // Initial balance display
     updateBalancePill();
+    updateUserMenu();
+  }
+
+  // ── LOAD CLOUD DATA ───────────────────────────────────────
+  // Fetches all user data from Supabase and loads into DataStore
+  async function loadCloudData() {
+    try {
+      // Load trades
+      const cloudTrades = await CloudStore.loadTrades();
+      if (cloudTrades !== null) {
+        DataStore.replaceAllTrades(cloudTrades);
+      }
+      // Load notes
+      const cloudNotes = await CloudStore.loadNotes();
+      if (cloudNotes !== null) {
+        DataStore.replaceAllNotes(cloudNotes);
+      }
+      // Load settings
+      const cloudSettings = await CloudStore.loadSettings();
+      if (cloudSettings !== null) {
+        DataStore.saveSettings(cloudSettings);
+      }
+    } catch (e) {
+      console.warn('Cloud load failed, using local data:', e.message);
+    }
+  }
+
+  // ── USER MENU ─────────────────────────────────────────────
+  function bindUserMenu() {
+    const btn      = document.getElementById('userAvatarBtn');
+    const dropdown = document.getElementById('userDropdown');
+    if (!btn) return;
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = dropdown.style.display !== 'none';
+      dropdown.style.display = isOpen ? 'none' : 'block';
+    });
+
+    // Close on outside click
+    document.addEventListener('click', () => {
+      if (dropdown) dropdown.style.display = 'none';
+    });
+  }
+
+  function updateUserMenu() {
+    const email   = SupabaseClient.getUserEmail() || '';
+    const session = JSON.parse(localStorage.getItem('kf_session') || '{}');
+    const name    = session?.user?.user_metadata?.full_name || email.split('@')[0] || 'User';
+    const initial = name.charAt(0).toUpperCase();
+
+    const el = document.getElementById('userInitial');
+    if (el) el.textContent = initial;
+    const nameEl = document.getElementById('dropdownName');
+    if (nameEl) nameEl.textContent = name;
+    const emailEl = document.getElementById('dropdownEmail');
+    if (emailEl) emailEl.textContent = email;
+  }
+
+  // ── SIGN OUT ──────────────────────────────────────────────
+  async function signOut() {
+    await SupabaseClient.signOut();
+    localStorage.removeItem('kf_session');
+    DataStore.clearAll();
+    window.location.href = 'login.html';
   }
 
   // ── NAVIGATION ───────────────────────────────────────────
@@ -235,6 +317,7 @@ const App = (() => {
     const val = parseFloat(document.getElementById('startingBalanceInput').value);
     if (isNaN(val) || val < 0) { UI.toast('Enter a valid amount', 'error'); return; }
     DataStore.saveSettings({ accountBalance: val });
+    if (CloudStore.isOnline()) CloudStore.saveSettings(DataStore.getSettings());
     updateBalancePill();
     closeBalanceModal();
     UI.toast('Balance updated ✓', 'success');
@@ -437,6 +520,7 @@ const App = (() => {
   function deleteTrade(id) {
     if (!confirm('Delete this trade?')) return;
     DataStore.deleteTrade(id);
+    if (CloudStore.isOnline()) CloudStore.deleteTrade(id);
     UI.toast('Trade deleted', 'warn');
     refreshDashboard();
     if (currentPage === 'trades') renderTradeLog();
@@ -658,10 +742,17 @@ const App = (() => {
     }
   }
 
-  function confirmImport() {
+  async function confirmImport() {
     if (!pendingImport.length) return;
     const added = DataStore.addTrades(pendingImport);
     UI.toast(`✓ Imported ${added} new trades!`, 'success');
+    // Sync to cloud
+    if (CloudStore.isOnline()) {
+      UI.toast('☁ Syncing to cloud…', '');
+      const trades = DataStore.getTrades();
+      await CloudStore.syncLocalTrades(trades);
+      UI.toast('☁ Synced to cloud ✓', 'success');
+    }
 
     const logMessages = [{ msg: `✅ ${added} trades imported (${pendingImport.length - added} duplicates skipped)`, type: 'success' }];
     UI.appendImportLog(logMessages);
@@ -799,6 +890,8 @@ const App = (() => {
 
     DataStore.addTrade(trade);
     UI.toast(`✓ Trade added: ${symbol}`, 'success');
+    // Save to cloud
+    if (CloudStore.isOnline()) CloudStore.saveTrade(trade);
     clearManualForm();
     refreshDashboard();
     updateBalancePill();
@@ -941,7 +1034,9 @@ const App = (() => {
     goToPage,
     refreshDashboard,
     calcManualPnl,
-    clearManualForm
+    clearManualForm,
+    openBalanceModal,
+    signOut
   };
 })();
 
