@@ -1,21 +1,8 @@
 /* ============================================================
-   app.js — Main Application Controller
-
-   RESPONSIBILITIES:
-   - Bootstrap the app on DOMContentLoaded
-   - Handle page navigation between all 5 sections
-   - Refresh Dashboard stats cards and charts
-   - Render and filter the Trade Log table
-   - Handle trade view / edit / delete actions
-   - Render Analytics charts and advanced metrics
-   - Render the monthly Calendar view
-   - Handle file import flow (drag-drop + file picker)
-   - Handle manual trade entry form
-   - Manage Notes (create, edit, delete, search)
-   - Export data as CSV or JSON backup
-
-   PAGE FLOW:
-   Dashboard → Trade Log → Analytics → Calendar → Import → Notes
+   app.js — Main Application Controller (CLOUD SYNC VERSION)
+   
+   FIXED: "Clear ALL trade data" now permanently deletes
+          from Supabase cloud, not just local DataStore.
    ============================================================ */
 
 const App = (() => {
@@ -30,25 +17,19 @@ const App = (() => {
   let activeNoteId = null;
 
   // ── INIT ─────────────────────────────────────────────────
-  // ── APP INIT ─────────────────────────────────────────────
   async function init() {
-    // Check authentication first
     const session = await SupabaseClient.restoreSession();
     if (!session) {
-      // Not logged in — redirect to login page
       window.location.href = 'login.html';
       return;
     }
 
-    // Save session and set online mode
     localStorage.setItem('kf_session', JSON.stringify(session));
     SupabaseClient.setSession(session);
     CloudStore.setOnline(true);
 
-    // Load cloud data into DataStore
     await loadCloudData();
 
-    // Setup UI
     bindNav();
     bindTopbar();
     bindImport();
@@ -66,24 +47,14 @@ const App = (() => {
   }
 
   // ── LOAD CLOUD DATA ───────────────────────────────────────
-  // Fetches all user data from Supabase and loads into DataStore
   async function loadCloudData() {
     try {
-      // Load trades
       const cloudTrades = await CloudStore.loadTrades();
-      if (cloudTrades !== null) {
-        DataStore.replaceAllTrades(cloudTrades);
-      }
-      // Load notes
+      if (cloudTrades !== null) DataStore.replaceAllTrades(cloudTrades);
       const cloudNotes = await CloudStore.loadNotes();
-      if (cloudNotes !== null) {
-        DataStore.replaceAllNotes(cloudNotes);
-      }
-      // Load settings
+      if (cloudNotes !== null) DataStore.replaceAllNotes(cloudNotes);
       const cloudSettings = await CloudStore.loadSettings();
-      if (cloudSettings !== null) {
-        DataStore.saveSettings(cloudSettings);
-      }
+      if (cloudSettings !== null) DataStore.saveSettings(cloudSettings);
     } catch (e) {
       console.warn('Cloud load failed, using local data:', e.message);
     }
@@ -94,14 +65,10 @@ const App = (() => {
     const btn      = document.getElementById('userAvatarBtn');
     const dropdown = document.getElementById('userDropdown');
     if (!btn) return;
-
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const isOpen = dropdown.style.display !== 'none';
-      dropdown.style.display = isOpen ? 'none' : 'block';
+      dropdown.style.display = dropdown.style.display !== 'none' ? 'none' : 'block';
     });
-
-    // Close on outside click
     document.addEventListener('click', () => {
       if (dropdown) dropdown.style.display = 'none';
     });
@@ -112,7 +79,6 @@ const App = (() => {
     const session = JSON.parse(localStorage.getItem('kf_session') || '{}');
     const name    = session?.user?.user_metadata?.full_name || email.split('@')[0] || 'User';
     const initial = name.charAt(0).toUpperCase();
-
     const el = document.getElementById('userInitial');
     if (el) el.textContent = initial;
     const nameEl = document.getElementById('dropdownName');
@@ -121,7 +87,6 @@ const App = (() => {
     if (emailEl) emailEl.textContent = email;
   }
 
-  // ── SIGN OUT ──────────────────────────────────────────────
   async function signOut() {
     await SupabaseClient.signOut();
     localStorage.removeItem('kf_session');
@@ -137,7 +102,6 @@ const App = (() => {
         navigateTo(item.dataset.page);
       });
     });
-
     document.querySelectorAll('.view-all-link').forEach(link => {
       link.addEventListener('click', e => {
         e.preventDefault();
@@ -145,29 +109,22 @@ const App = (() => {
       });
     });
 
-    // ── Sidebar toggle with overlay ──────────────────────
     const sidebar        = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
-
     function openSidebar() {
       sidebar.classList.add('open');
       sidebarOverlay.classList.add('show');
-      document.body.style.overflow = 'hidden'; // prevent background scroll
+      document.body.style.overflow = 'hidden';
     }
     function closeSidebar() {
       sidebar.classList.remove('open');
       sidebarOverlay.classList.remove('show');
       document.body.style.overflow = '';
     }
-
     document.getElementById('menuToggle').addEventListener('click', () => {
       sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
     });
-
-    // Close when tapping overlay
     sidebarOverlay.addEventListener('click', closeSidebar);
-
-    // Close sidebar when navigating on mobile
     document.querySelectorAll('.nav-item').forEach(item => {
       item.addEventListener('click', () => {
         if (window.innerWidth <= 900) closeSidebar();
@@ -178,28 +135,17 @@ const App = (() => {
   function navigateTo(page) {
     if (currentPage === page) return;
     currentPage = page;
-
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(`page-${page}`).classList.add('active');
-
     document.querySelectorAll('.nav-item').forEach(item => {
       item.classList.toggle('active', item.dataset.page === page);
     });
-
     const titles = {
-      dashboard: 'Dashboard',
-      trades: 'Trade Log',
-      analytics: 'Analytics',
-      calendar: 'Calendar',
-      import: 'Import',
-      notes: 'Notes'
+      dashboard: 'Dashboard', trades: 'Trade Log', analytics: 'Analytics',
+      calendar: 'Calendar', import: 'Import', notes: 'Notes'
     };
     document.getElementById('topbarTitle').textContent = titles[page] || page;
-
-    // Close sidebar on mobile
     document.getElementById('sidebar').classList.remove('open');
-
-    // Lazy render
     if (page === 'trades') renderTradeLog();
     if (page === 'analytics') renderAnalytics();
     if (page === 'calendar') renderCalendar();
@@ -212,7 +158,6 @@ const App = (() => {
       navigateTo('import');
       document.getElementById('mSymbol').focus();
     });
-
     document.querySelectorAll('.dfilter').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.dfilter').forEach(b => b.classList.remove('active'));
@@ -221,28 +166,75 @@ const App = (() => {
         refreshDashboard();
       });
     });
-
     document.getElementById('exportAllBtn').addEventListener('click', exportAll);
-
-    // ── Balance pill — click to open settings ────────────
     document.getElementById('balancePill').addEventListener('click', openBalanceModal);
     document.getElementById('balanceModalClose').addEventListener('click', closeBalanceModal);
     document.getElementById('saveBalanceBtn').addEventListener('click', saveStartingBalance);
     document.getElementById('balanceModal').addEventListener('click', (e) => {
       if (e.target === e.currentTarget) closeBalanceModal();
     });
-
-    // Live preview as user types
     document.getElementById('startingBalanceInput').addEventListener('input', updateBalancePreview);
 
-    document.getElementById('clearDataBtn').addEventListener('click', () => {
-      if (confirm('Clear ALL trade data? This cannot be undone.')) {
-        DataStore.clearAll();
-        refreshDashboard();
-        renderTradeLog();
-        UI.toast('All data cleared', 'warn');
-      }
-    });
+    // ============================================================
+    // FIXED: Clear ALL trade data — now permanently deletes from Supabase cloud
+    // ============================================================
+    const clearBtn = document.getElementById('clearDataBtn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', async () => {
+        // First confirmation
+        const confirmed = confirm(
+          '⚠️ PERMANENT DELETE ⚠️\n\n' +
+          'This will delete ALL your trades from the CLOUD.\n' +
+          'This means you will lose them on ALL devices.\n\n' +
+          'This CANNOT be undone.\n\n' +
+          'Are you ABSOLUTELY sure?'
+        );
+        if (!confirmed) return;
+
+        // Second confirmation (extra safe)
+        const reallySure = confirm(
+          'LAST WARNING!\n\n' +
+          'All your trades will be permanently deleted from the cloud.\n' +
+          'Click OK to delete everything, Cancel to abort.'
+        );
+        if (!reallySure) return;
+
+        try {
+          UI.toast('Deleting from cloud...', '');
+
+          // Get current logged-in user
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (userError) throw userError;
+          if (!user) {
+            UI.toast('You must be logged in', 'error');
+            return;
+          }
+
+          // Delete ALL trades belonging to this user from Supabase
+          const { error: deleteError } = await supabase
+            .from('trades')
+            .delete()
+            .eq('user_id', user.id);
+
+          if (deleteError) throw deleteError;
+
+          // Also clear local DataStore
+          DataStore.clearAll();
+
+          // Refresh all UI components
+          refreshDashboard();
+          renderTradeLog();
+          if (typeof renderAnalytics === 'function') renderAnalytics();
+          if (typeof renderCalendar === 'function') renderCalendar();
+          updateBalancePill();
+
+          UI.toast('✅ All your trades have been permanently deleted from the cloud!', 'success');
+        } catch (err) {
+          console.error('Delete error:', err);
+          UI.toast('Error deleting: ' + err.message, 'error');
+        }
+      });
+    }
   }
 
   function getFilteredByRange() {
@@ -251,34 +243,18 @@ const App = (() => {
     return DataStore.getTrades({ days: parseInt(currentFilter) });
   }
 
-  // ── UPDATE BALANCE PILL ────────────────────────────────
-  // Shows: starting balance + all P&L = current balance
-  // Also shows total P&L in green/red
   function updateBalancePill() {
     const trades   = DataStore.getTrades();
     const settings = DataStore.getSettings();
     const start    = settings.accountBalance || 10000;
-
-    // Total net P&L across ALL trades
-    const netPnl  = trades.reduce((s, t) => s + (t.pnl || 0), 0);
-    const balance = start + netPnl;
-
-    // Update balance display
+    const netPnl   = trades.reduce((s, t) => s + (t.pnl || 0), 0);
+    const balance  = start + netPnl;
     const balEl = document.getElementById('topbarBalance');
-    if (balEl) balEl.textContent = '$' + balance.toLocaleString('en-US', {
-      minimumFractionDigits: 2, maximumFractionDigits: 2
-    });
-
-    // Show total P&L (not just today — more useful)
+    if (balEl) balEl.textContent = '$' + balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const dayEl = document.getElementById('topbarDayPnl');
     if (dayEl) {
       const sign = netPnl >= 0 ? '+' : '';
-      dayEl.textContent = sign + '$' + Math.abs(netPnl).toLocaleString('en-US', {
-        minimumFractionDigits: 2, maximumFractionDigits: 2
-      });
-      if (netPnl > 0) dayEl.textContent = '+$' + netPnl.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
-      else if (netPnl < 0) dayEl.textContent = '-$' + Math.abs(netPnl).toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
-      else dayEl.textContent = '$0.00';
+      dayEl.textContent = sign + '$' + Math.abs(netPnl).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
       dayEl.className = 'pill-pnl ' + (netPnl > 0 ? 'positive' : netPnl < 0 ? 'negative' : '');
     }
   }
@@ -286,33 +262,25 @@ const App = (() => {
   // ── BALANCE MODAL ─────────────────────────────────────
   function openBalanceModal() {
     const settings = DataStore.getSettings();
-    const input    = document.getElementById('startingBalanceInput');
-    input.value    = settings.accountBalance || 10000;
+    document.getElementById('startingBalanceInput').value = settings.accountBalance || 10000;
     updateBalancePreview();
     document.getElementById('balanceModal').style.display = 'flex';
-    input.focus();
-    input.select();
   }
-
   function closeBalanceModal() {
     document.getElementById('balanceModal').style.display = 'none';
   }
-
   function updateBalancePreview() {
-    const val    = parseFloat(document.getElementById('startingBalanceInput').value) || 0;
+    const val = parseFloat(document.getElementById('startingBalanceInput').value) || 0;
     const trades = DataStore.getTrades();
     const netPnl = trades.reduce((s, t) => s + (t.pnl || 0), 0);
     const curr   = val + netPnl;
-    const fmt    = (n) => (n >= 0 ? '+$' : '-$') + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
-    const fmtAbs = (n) => '$' + n.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
-
-    document.getElementById('bm_starting').textContent  = fmtAbs(val);
+    const fmtAbs = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+    document.getElementById('bm_starting').textContent = fmtAbs(val);
     const pnlEl = document.getElementById('bm_pnl');
-    pnlEl.textContent = fmt(netPnl);
+    pnlEl.textContent = (netPnl >= 0 ? '+$' : '-$') + Math.abs(netPnl).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
     pnlEl.style.color = netPnl >= 0 ? 'var(--green)' : 'var(--red)';
-    document.getElementById('bm_current').textContent   = fmtAbs(curr);
+    document.getElementById('bm_current').textContent = fmtAbs(curr);
   }
-
   function saveStartingBalance() {
     const val = parseFloat(document.getElementById('startingBalanceInput').value);
     if (isNaN(val) || val < 0) { UI.toast('Enter a valid amount', 'error'); return; }
@@ -327,47 +295,27 @@ const App = (() => {
   function refreshDashboard() {
     const trades = getFilteredByRange();
     const stats = Stats.compute(trades);
-
-    // Stats cards
     const pnlEl = document.getElementById('statNetPnl');
     pnlEl.textContent = UI.fmtCurrency(stats.netPnl, true);
     pnlEl.className = `stat-value ${stats.netPnl >= 0 ? 'green' : 'red'}`;
-    document.getElementById('statNetPnlPct').textContent = stats.total > 0
-      ? `${stats.wins}W / ${stats.losses}L / ${stats.even}B` : '—';
-
-    document.getElementById('statWinRate').textContent = stats.total
-      ? stats.winRate.toFixed(1) + '%' : '0%';
+    document.getElementById('statNetPnlPct').textContent = stats.total > 0 ? `${stats.wins}W / ${stats.losses}L / ${stats.even}B` : '—';
+    document.getElementById('statWinRate').textContent = stats.total ? stats.winRate.toFixed(1) + '%' : '0%';
     document.getElementById('statWinsLosses').textContent = `${stats.wins}W / ${stats.losses}L`;
-
-    document.getElementById('statProfitFactor').textContent =
-      stats.profitFactor === Infinity ? '∞' : stats.profitFactor.toFixed(2);
-
+    document.getElementById('statProfitFactor').textContent = stats.profitFactor === Infinity ? '∞' : stats.profitFactor.toFixed(2);
     document.getElementById('statAvgWin').textContent = UI.fmtCurrency(stats.avgWin);
     document.getElementById('statAvgWinR').textContent = stats.avgWinR ? UI.fmtR(stats.avgWinR) : '—';
     document.getElementById('statAvgLoss').textContent = UI.fmtCurrency(stats.avgLoss);
     document.getElementById('statAvgLossR').textContent = stats.avgLossR ? UI.fmtR(stats.avgLossR) : '—';
-
     document.getElementById('statTotalTrades').textContent = stats.total;
-    document.getElementById('statAvgDuration').textContent = stats.avgDuration
-      ? `Avg: ${UI.fmtDuration(stats.avgDuration)}` : 'Avg: —';
-
-    document.getElementById('statBestTrade').textContent =
-      stats.bestTrade ? UI.fmtCurrency(stats.bestTrade.pnl, true) : '—';
+    document.getElementById('statAvgDuration').textContent = stats.avgDuration ? `Avg: ${UI.fmtDuration(stats.avgDuration)}` : 'Avg: —';
+    document.getElementById('statBestTrade').textContent = stats.bestTrade ? UI.fmtCurrency(stats.bestTrade.pnl, true) : '—';
     document.getElementById('statBestSym').textContent = stats.bestTrade ? stats.bestTrade.symbol : '—';
-    document.getElementById('statWorstTrade').textContent =
-      stats.worstTrade ? UI.fmtCurrency(stats.worstTrade.pnl, true) : '—';
+    document.getElementById('statWorstTrade').textContent = stats.worstTrade ? UI.fmtCurrency(stats.worstTrade.pnl, true) : '—';
     document.getElementById('statWorstSym').textContent = stats.worstTrade ? stats.worstTrade.symbol : '—';
-
-    // Recent trades
-    const recent = trades.slice(0, 8);
     const tbody = document.getElementById('recentTradesTbody');
-    tbody.innerHTML = recent.length
-      ? recent.map(t => UI.tradeRowSimple(t)).join('')
-      : UI.emptyState('No trades in this period');
-
+    const recent = trades.slice(0, 8);
+    tbody.innerHTML = recent.length ? recent.map(t => UI.tradeRowSimple(t)).join('') : UI.emptyState('No trades in this period');
     updateBalancePill();
-
-    // Charts
     Charts.renderCumulativePnl(stats.cumPnl);
     Charts.renderWinLoss(stats.wins, stats.losses, stats.even);
     Charts.renderSymbolPnl(stats.bySymbol);
@@ -377,28 +325,15 @@ const App = (() => {
 
   // ── TRADE LOG ────────────────────────────────────────────
   function bindTradeLog() {
-    document.getElementById('tradeSearch').addEventListener('input', () => {
-      currentPage2 = 1;
-      renderTradeLog();
-    });
-    document.getElementById('sideFilter').addEventListener('change', () => {
-      currentPage2 = 1;
-      renderTradeLog();
-    });
-    document.getElementById('resultFilter').addEventListener('change', () => {
-      currentPage2 = 1;
-      renderTradeLog();
-    });
+    document.getElementById('tradeSearch').addEventListener('input', () => { currentPage2 = 1; renderTradeLog(); });
+    document.getElementById('sideFilter').addEventListener('change', () => { currentPage2 = 1; renderTradeLog(); });
+    document.getElementById('resultFilter').addEventListener('change', () => { currentPage2 = 1; renderTradeLog(); });
     document.getElementById('exportCsvBtn').addEventListener('click', exportCSV);
-
     document.querySelectorAll('#fullTradesTable th[data-sort]').forEach(th => {
       th.addEventListener('click', () => {
         const col = th.dataset.sort;
-        if (currentSort.col === col) {
-          currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
-        } else {
-          currentSort = { col, dir: 'desc' };
-        }
+        if (currentSort.col === col) currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+        else currentSort = { col, dir: 'desc' };
         renderTradeLog();
       });
     });
@@ -409,18 +344,9 @@ const App = (() => {
     const search = document.getElementById('tradeSearch').value.toLowerCase();
     const side = document.getElementById('sideFilter').value;
     const result = document.getElementById('resultFilter').value;
-
-    if (search) {
-      trades = trades.filter(t =>
-        t.symbol.toLowerCase().includes(search) ||
-        (t.notes || '').toLowerCase().includes(search) ||
-        (t.tags || []).some(tag => tag.toLowerCase().includes(search))
-      );
-    }
+    if (search) trades = trades.filter(t => t.symbol.toLowerCase().includes(search) || (t.notes || '').toLowerCase().includes(search) || (t.tags || []).some(tag => tag.toLowerCase().includes(search)));
     if (side) trades = trades.filter(t => t.side === side);
     if (result) trades = trades.filter(t => t.result === result);
-
-    // Sort
     trades.sort((a, b) => {
       let va, vb;
       switch (currentSort.col) {
@@ -437,49 +363,33 @@ const App = (() => {
       if (va > vb) return currentSort.dir === 'asc' ? 1 : -1;
       return 0;
     });
-
     filteredTrades = trades;
-
-    // Paginate
     const total = trades.length;
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
     currentPage2 = Math.min(currentPage2, totalPages);
     const start = (currentPage2 - 1) * PAGE_SIZE;
     const page = trades.slice(start, start + PAGE_SIZE);
-
     const tbody = document.getElementById('fullTradesTbody');
-    tbody.innerHTML = page.length
-      ? page.map(t => UI.tradeRow(t, true)).join('')
-      : UI.emptyState('No trades match your filters');
-
+    tbody.innerHTML = page.length ? page.map(t => UI.tradeRow(t, true)).join('') : UI.emptyState('No trades match your filters');
     renderPagination(totalPages);
   }
 
   function renderPagination(total) {
     const el = document.getElementById('pagination');
     if (total <= 1) { el.innerHTML = ''; return; }
-
     let html = '';
     if (currentPage2 > 1) html += `<button class="page-btn" onclick="App.goToPage(${currentPage2 - 1})">‹</button>`;
     const start = Math.max(1, currentPage2 - 2);
     const end = Math.min(total, currentPage2 + 2);
     if (start > 1) html += `<button class="page-btn" onclick="App.goToPage(1)">1</button>${start > 2 ? '<span>…</span>' : ''}`;
-    for (let i = start; i <= end; i++) {
-      html += `<button class="page-btn ${i === currentPage2 ? 'active' : ''}" onclick="App.goToPage(${i})">${i}</button>`;
-    }
+    for (let i = start; i <= end; i++) html += `<button class="page-btn ${i === currentPage2 ? 'active' : ''}" onclick="App.goToPage(${i})">${i}</button>`;
     if (end < total) html += `${end < total - 1 ? '<span>…</span>' : ''}<button class="page-btn" onclick="App.goToPage(${total})">${total}</button>`;
     if (currentPage2 < total) html += `<button class="page-btn" onclick="App.goToPage(${currentPage2 + 1})">›</button>`;
-
     el.innerHTML = html;
   }
 
-  function goToPage(p) {
-    currentPage2 = p;
-    renderTradeLog();
-    document.getElementById('page-trades').scrollTop = 0;
-  }
+  function goToPage(p) { currentPage2 = p; renderTradeLog(); document.getElementById('page-trades').scrollTop = 0; }
 
-  // ── TRADE ACTIONS ────────────────────────────────────────
   function viewTrade(id) {
     const trade = DataStore.getTrades().find(t => t.id === id);
     if (!trade) return;
@@ -501,14 +411,11 @@ const App = (() => {
       exit: parseFloat(document.getElementById('edit-exit').value) || 0,
       stop: parseFloat(document.getElementById('edit-stop').value) || undefined,
       commission: parseFloat(document.getElementById('edit-commission').value) || 0,
-      entryDate: document.getElementById('edit-entryDate').value
-        ? new Date(document.getElementById('edit-entryDate').value).toISOString() : undefined,
-      exitDate: document.getElementById('edit-exitDate').value
-        ? new Date(document.getElementById('edit-exitDate').value).toISOString() : undefined,
+      entryDate: document.getElementById('edit-entryDate').value ? new Date(document.getElementById('edit-entryDate').value).toISOString() : undefined,
+      exitDate: document.getElementById('edit-exitDate').value ? new Date(document.getElementById('edit-exitDate').value).toISOString() : undefined,
       notes: document.getElementById('edit-notes').value,
       tags: document.getElementById('edit-tags').value.split(',').map(t => t.trim()).filter(Boolean),
     };
-
     DataStore.updateTrade(id, changes);
     UI.closeModal();
     UI.toast('Trade updated ✓', 'success');
@@ -533,15 +440,12 @@ const App = (() => {
   function renderAnalytics() {
     const trades = DataStore.getTrades();
     const stats = Stats.compute(trades);
-
     Charts.renderMonthlyPnl(stats.byMonth);
     Charts.renderRMultiple(trades);
     Charts.renderDrawdown(trades);
     Charts.renderSymbolWinRate(stats.bySymbol);
     Charts.renderDurationScatter(trades);
     Charts.renderStreaks(trades);
-
-    // Advanced metrics grid
     const metrics = [
       { name: 'Expectancy', val: UI.fmtCurrency(stats.expectancy, true) },
       { name: 'Max Drawdown', val: UI.fmtCurrency(-stats.maxDD), cls: 'red' },
@@ -556,36 +460,21 @@ const App = (() => {
       { name: 'Gross Profit', val: UI.fmtCurrency(stats.grossWin) },
       { name: 'Gross Loss', val: UI.fmtCurrency(-stats.grossLoss) },
     ];
-
-    document.getElementById('metricsGrid').innerHTML = metrics.map(m => `
-      <div class="metric-item">
-        <div class="metric-name">${m.name}</div>
-        <div class="metric-val" style="${m.cls ? `color:var(--${m.cls})` : ''}">${m.val}</div>
-      </div>`).join('');
+    document.getElementById('metricsGrid').innerHTML = metrics.map(m => `<div class="metric-item"><div class="metric-name">${m.name}</div><div class="metric-val" style="${m.cls ? `color:var(--${m.cls})` : ''}">${m.val}</div></div>`).join('');
   }
 
   // ── CALENDAR ─────────────────────────────────────────────
   function bindCalendar() {
-    document.getElementById('calPrev').addEventListener('click', () => {
-      calendarDate.setMonth(calendarDate.getMonth() - 1);
-      renderCalendar();
-    });
-    document.getElementById('calNext').addEventListener('click', () => {
-      calendarDate.setMonth(calendarDate.getMonth() + 1);
-      renderCalendar();
-    });
-    document.getElementById('calDetailClose').addEventListener('click', () => {
-      document.getElementById('calDayDetail').style.display = 'none';
-    });
+    document.getElementById('calPrev').addEventListener('click', () => { calendarDate.setMonth(calendarDate.getMonth() - 1); renderCalendar(); });
+    document.getElementById('calNext').addEventListener('click', () => { calendarDate.setMonth(calendarDate.getMonth() + 1); renderCalendar(); });
+    document.getElementById('calDetailClose').addEventListener('click', () => { document.getElementById('calDayDetail').style.display = 'none'; });
   }
 
   function renderCalendar() {
     const year = calendarDate.getFullYear();
     const month = calendarDate.getMonth();
-    const monthNames = ['January','February','March','April','May','June',
-                        'July','August','September','October','November','December'];
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     document.getElementById('calMonthLabel').textContent = `${monthNames[month]} ${year}`;
-
     const trades = DataStore.getTrades();
     const byDay = {};
     for (const t of trades) {
@@ -597,38 +486,24 @@ const App = (() => {
         byDay[key].pnl += t.pnl || 0;
       }
     }
-
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const today = new Date();
     const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
-
     let html = '';
     const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     html += dayHeaders.map(d => `<div class="cal-day-header">${d}</div>`).join('');
-
     for (let i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
-
     for (let d = 1; d <= daysInMonth; d++) {
       const isToday = isCurrentMonth && d === today.getDate();
       const dayData = byDay[d];
       const pnl = dayData ? dayData.pnl : null;
       const tradeCount = dayData ? dayData.trades.length : 0;
-
       let cls = 'cal-day';
       if (isToday) cls += ' today';
-      if (dayData) {
-        cls += ' has-trades';
-        cls += pnl > 0 ? ' profitable' : pnl < 0 ? ' losing' : '';
-      }
-
-      html += `<div class="${cls}" ${dayData ? `onclick="App.showCalDay(${d}, ${year}, ${month})"` : ''}>
-        <div class="cal-day-num">${d}</div>
-        ${dayData ? `<div class="cal-day-pnl ${UI.colorPnl(pnl)}">${UI.fmtCurrency(pnl, true)}</div>
-        <div class="cal-day-trades">${tradeCount} trade${tradeCount !== 1 ? 's' : ''}</div>` : ''}
-      </div>`;
+      if (dayData) { cls += ' has-trades'; cls += pnl > 0 ? ' profitable' : pnl < 0 ? ' losing' : ''; }
+      html += `<div class="${cls}" ${dayData ? `onclick="App.showCalDay(${d}, ${year}, ${month})"` : ''}><div class="cal-day-num">${d}</div>${dayData ? `<div class="cal-day-pnl ${UI.colorPnl(pnl)}">${UI.fmtCurrency(pnl, true)}</div><div class="cal-day-trades">${tradeCount} trade${tradeCount !== 1 ? 's' : ''}</div>` : ''}</div>`;
     }
-
     document.getElementById('calendarGrid').innerHTML = html;
   }
 
@@ -637,27 +512,10 @@ const App = (() => {
       const d = new Date(t.entryDate);
       return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day;
     });
-
     const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     document.getElementById('calDetailDate').textContent = `${monthNames[month]} ${day}, ${year}`;
-
     const netPnl = trades.reduce((s, t) => s + (t.pnl || 0), 0);
-    document.getElementById('calDetailContent').innerHTML = `
-      <div style="margin-bottom:12px">
-        <span style="font-family:var(--font-mono);font-size:15px;font-weight:700" class="${UI.colorPnl(netPnl)}">${UI.fmtCurrency(netPnl, true)}</span>
-        <span style="color:var(--text3);font-size:12px;margin-left:8px">${trades.length} trade${trades.length !== 1 ? 's' : ''}</span>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        ${trades.map(t => `
-          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px;cursor:pointer" onclick="App.viewTrade('${t.id}')">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <strong style="font-size:14px">${t.symbol}</strong>
-              <span style="font-family:var(--font-mono);font-size:13px" class="${UI.colorPnl(t.pnl)}">${UI.fmtCurrency(t.pnl, true)}</span>
-            </div>
-            <div style="color:var(--text2);font-size:12px;margin-top:4px">${t.side} · ${t.qty} shares · ${UI.resultBadge(t.result)}</div>
-          </div>`).join('')}
-      </div>`;
-
+    document.getElementById('calDetailContent').innerHTML = `<div style="margin-bottom:12px"><span style="font-family:var(--font-mono);font-size:15px;font-weight:700" class="${UI.colorPnl(netPnl)}">${UI.fmtCurrency(netPnl, true)}</span><span style="color:var(--text3);font-size:12px;margin-left:8px">${trades.length} trade${trades.length !== 1 ? 's' : ''}</span></div><div style="display:flex;flex-direction:column;gap:8px">${trades.map(t => `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px;cursor:pointer" onclick="App.viewTrade('${t.id}')"><div style="display:flex;justify-content:space-between;align-items:center"><strong style="font-size:14px">${t.symbol}</strong><span style="font-family:var(--font-mono);font-size:13px" class="${UI.colorPnl(t.pnl)}">${UI.fmtCurrency(t.pnl, true)}</span></div><div style="color:var(--text2);font-size:12px;margin-top:4px">${t.side} · ${t.qty} shares · ${UI.resultBadge(t.result)}</div></div>`).join('')}</div>`;
     document.getElementById('calDayDetail').style.display = 'block';
   }
 
@@ -665,98 +523,47 @@ const App = (() => {
   function bindImport() {
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
-
-    dropZone.addEventListener('dragover', e => {
-      e.preventDefault();
-      dropZone.classList.add('dragover');
-    });
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
     dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', e => {
-      e.preventDefault();
-      dropZone.classList.remove('dragover');
-      const file = e.dataTransfer.files[0];
-      if (file) handleFileImport(file);
-    });
-
-    fileInput.addEventListener('change', e => {
-      if (e.target.files[0]) handleFileImport(e.target.files[0]);
-      e.target.value = '';
-    });
-
+    dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); const file = e.dataTransfer.files[0]; if (file) handleFileImport(file); });
+    fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFileImport(e.target.files[0]); e.target.value = ''; });
     document.getElementById('confirmImportBtn').addEventListener('click', confirmImport);
-    document.getElementById('cancelImportBtn').addEventListener('click', () => {
-      document.getElementById('previewSection').style.display = 'none';
-      pendingImport = [];
-    });
+    document.getElementById('cancelImportBtn').addEventListener('click', () => { document.getElementById('previewSection').style.display = 'none'; pendingImport = []; });
   }
 
   async function handleFileImport(file) {
     UI.clearImportLog();
     document.getElementById('previewSection').style.display = 'none';
-
     const logMessages = [];
-    const addLog = (msg, type = '') => {
-      logMessages.push({ msg, type });
-      UI.appendImportLog(logMessages);
-    };
-
+    const addLog = (msg, type = '') => { logMessages.push({ msg, type }); UI.appendImportLog(logMessages); };
     addLog(`📄 Reading: ${file.name}`);
-
     try {
       const result = await BrokerParser.parseFile(file);
       result.logMessages.forEach(l => logMessages.push(l));
       UI.appendImportLog(logMessages);
-
-      if (!result.trades.length) {
-        addLog('⚠ No trades could be parsed from this file.', 'warn');
-        return;
-      }
-
+      if (!result.trades.length) { addLog('⚠ No trades could be parsed from this file.', 'warn'); return; }
       pendingImport = result.trades;
       addLog(`✅ Ready to import ${result.trades.length} trades from ${result.broker}`, 'success');
-
-      // Show preview
       const preview = result.trades.slice(0, 20);
-      document.getElementById('previewInfo').textContent =
-        `${result.broker} — ${result.trades.length} trades detected${result.trades.length > 20 ? ` (showing first 20)` : ''}`;
-
-      const thead = document.getElementById('previewThead');
-      thead.innerHTML = `<th>Date</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Commission</th>`;
-
-      const tbody = document.getElementById('previewTbody');
-      tbody.innerHTML = preview.map(t => `<tr>
-        <td>${UI.fmtDate(t.entryDate)}</td>
-        <td><strong>${t.symbol}</strong></td>
-        <td>${UI.sideBadge(t.side)}</td>
-        <td>${t.qty}</td>
-        <td>${t.entry ? '$' + parseFloat(t.entry).toFixed(2) : '—'}</td>
-        <td>${t.exit ? '$' + parseFloat(t.exit).toFixed(2) : '—'}</td>
-        <td class="${UI.colorPnl(t.pnl)}">${UI.fmtCurrency(t.pnl, true)}</td>
-        <td>${t.commission ? UI.fmtCurrency(t.commission) : '—'}</td>
-      </tr>`).join('');
-
+      document.getElementById('previewInfo').textContent = `${result.broker} — ${result.trades.length} trades detected${result.trades.length > 20 ? ` (showing first 20)` : ''}`;
+      document.getElementById('previewThead').innerHTML = `<th>Date</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Commission</th>`;
+      document.getElementById('previewTbody').innerHTML = preview.map(t => `<tr><td>${UI.fmtDate(t.entryDate)}</td><td><strong>${t.symbol}</strong></td><td>${UI.sideBadge(t.side)}</td><td>${t.qty}</td><td>${t.entry ? '$' + parseFloat(t.entry).toFixed(2) : '—'}</td><td>${t.exit ? '$' + parseFloat(t.exit).toFixed(2) : '—'}</td><td class="${UI.colorPnl(t.pnl)}">${UI.fmtCurrency(t.pnl, true)}</td><td>${t.commission ? UI.fmtCurrency(t.commission) : '—'}</td></tr>`).join('');
       document.getElementById('previewSection').style.display = 'block';
-    } catch (err) {
-      addLog(`✗ Error: ${err.message}`, 'error');
-      addLog('Try a different file format or use manual entry below.', 'warn');
-    }
+    } catch (err) { addLog(`✗ Error: ${err.message}`, 'error'); addLog('Try a different file format or use manual entry below.', 'warn'); }
   }
 
   async function confirmImport() {
     if (!pendingImport.length) return;
     const added = DataStore.addTrades(pendingImport);
     UI.toast(`✓ Imported ${added} new trades!`, 'success');
-    // Sync to cloud
     if (CloudStore.isOnline()) {
       UI.toast('☁ Syncing to cloud…', '');
       const trades = DataStore.getTrades();
       await CloudStore.syncLocalTrades(trades);
       UI.toast('☁ Synced to cloud ✓', 'success');
     }
-
     const logMessages = [{ msg: `✅ ${added} trades imported (${pendingImport.length - added} duplicates skipped)`, type: 'success' }];
     UI.appendImportLog(logMessages);
-
     pendingImport = [];
     document.getElementById('previewSection').style.display = 'none';
     refreshDashboard();
@@ -764,17 +571,13 @@ const App = (() => {
   }
 
   // ── MANUAL FORM ──────────────────────────────────────────
-  // ── MANUAL FORM SETUP ───────────────────────────────────
-  // Binds submit, clear buttons and live P&L calculator.
   function bindManualForm() {
     document.getElementById('submitManualBtn').addEventListener('click', submitManualTrade);
     document.getElementById('clearManualBtn').addEventListener('click', clearManualForm);
+    const inputs = ['mSymbol','mSide','mQty','mEntry','mExit','mStop','mTP','mCommission'];
+    inputs.forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', calcManualPnl); });
   }
 
-  // ── LIVE P&L / R:R CALCULATOR ───────────────────────────
-  // Called on every input change in the manual form.
-  // Calculates and shows P&L preview and Risk:Reward ratio
-  // so the trader sees the numbers before submitting.
   function calcManualPnl() {
     const side  = document.getElementById('mSide').value;
     const qty   = parseFloat(document.getElementById('mQty').value)   || 0;
@@ -783,7 +586,6 @@ const App = (() => {
     const sl    = parseFloat(document.getElementById('mStop').value)  || 0;
     const tp    = parseFloat(document.getElementById('mTP').value)    || 0;
     const comm  = parseFloat(document.getElementById('mCommission').value) || 0;
-
     const pnlEl    = document.getElementById('mPnlPreview');
     const rrPreview= document.getElementById('rrPreview');
     const rrRisk   = document.getElementById('rrRisk');
@@ -791,11 +593,6 @@ const App = (() => {
     const rrRatio  = document.getElementById('rrRatio');
     const riskHint = document.getElementById('mRiskHint');
     const rewHint  = document.getElementById('mRewardHint');
-
-    // ── P&L preview ───────────────────────────────────────
-    // Same formula as enrichTrade:
-    //   lots (qty < 10):   diff × qty × 100
-    //   shares (qty >= 10): diff × qty
     if (entry && exit && qty) {
       const isLots = qty < 10;
       const mult   = isLots ? 100 : 1;
@@ -804,21 +601,14 @@ const App = (() => {
       const netPnl = rawPnl - comm;
       pnlEl.value = (netPnl >= 0 ? '+' : '') + '$' + netPnl.toFixed(2);
       pnlEl.style.color = netPnl > 0 ? 'var(--green)' : netPnl < 0 ? 'var(--red)' : 'var(--text2)';
-    } else {
-      pnlEl.value = '';
-      pnlEl.style.color = 'var(--text2)';
-    }
-
-    // ── R:R Ratio preview ─────────────────────────────────
+    } else { pnlEl.value = ''; pnlEl.style.color = 'var(--text2)'; }
     if (entry && sl && qty) {
       const isLots  = qty < 10;
       const mult    = isLots ? 100 : 1;
       const riskPip = Math.abs(entry - sl);
       const riskUSD = isLots ? riskPip * qty * mult : riskPip * qty;
-
       riskHint.textContent = riskUSD > 0 ? 'Risk: $' + riskUSD.toFixed(2) : '';
       rrRisk.textContent   = '$' + riskUSD.toFixed(2);
-
       if (tp && entry) {
         const rewPip  = Math.abs(tp - entry);
         const rewUSD  = isLots ? rewPip * qty * mult : rewPip * qty;
@@ -828,34 +618,19 @@ const App = (() => {
         rrRatio.textContent  = ratio.toFixed(2) + ':1';
         rrRatio.style.color  = ratio >= 2 ? 'var(--green)' : ratio >= 1 ? 'var(--accent)' : 'var(--red)';
         rrPreview.style.display = 'flex';
-      } else {
-        rewHint.textContent  = '';
-        rrReward.textContent = '—';
-        rrRatio.textContent  = '—';
-        rrPreview.style.display = entry && sl ? 'flex' : 'none';
-      }
-    } else {
-      riskHint.textContent = '';
-      rewHint.textContent  = '';
-      rrPreview.style.display = 'none';
-    }
+      } else { rewHint.textContent = ''; rrReward.textContent = '—'; rrRatio.textContent = '—'; rrPreview.style.display = entry && sl ? 'flex' : 'none'; }
+    } else { riskHint.textContent = ''; rewHint.textContent = ''; rrPreview.style.display = 'none'; }
   }
 
-  // ── CLEAR MANUAL FORM ────────────────────────────────────
   function clearManualForm() {
-    ['mSymbol','mQty','mEntry','mExit','mStop','mTP',
-     'mEntryDt','mExitDt','mCommission','mNotes','mTags']
-      .forEach(id => { document.getElementById(id).value = ''; });
-    document.getElementById('mSide').value   = 'LONG';
-    document.getElementById('mResult').value = '';
-    document.getElementById('mPnlPreview').value = '';
+    ['mSymbol','mQty','mEntry','mExit','mStop','mTP','mEntryDt','mExitDt','mCommission','mNotes','mTags'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    document.getElementById('mSide').value = 'LONG';
+    const pnlEl = document.getElementById('mPnlPreview'); if (pnlEl) pnlEl.value = '';
     document.getElementById('rrPreview').style.display = 'none';
-    document.getElementById('mRiskHint').textContent  = '';
+    document.getElementById('mRiskHint').textContent = '';
     document.getElementById('mRewardHint').textContent = '';
   }
 
-  // ── SUBMIT MANUAL TRADE ─────────────────────────────────
-  // Validates, enriches and saves a manually entered trade.
   function submitManualTrade() {
     const symbol = (document.getElementById('mSymbol').value || '').toUpperCase().trim();
     const side   = document.getElementById('mSide').value;
@@ -869,28 +644,13 @@ const App = (() => {
     const commission = parseFloat(document.getElementById('mCommission').value) || 0;
     const notes      = document.getElementById('mNotes').value;
     const tagsRaw    = document.getElementById('mTags').value;
-
-    // ── Validation ────────────────────────────────────────
-    if (!symbol)       { UI.toast('Symbol is required', 'error');     return; }
-    if (!qty || qty<=0){ UI.toast('Quantity is required', 'error');   return; }
-    if (!entry)        { UI.toast('Entry price is required', 'error');return; }
-    if (!entryDt)      { UI.toast('Entry date is required', 'error'); return; }
-
-    // ── Build and save trade ──────────────────────────────
-    const trade = DataStore.enrichTrade({
-      symbol, side, qty, entry,
-      exit: exit || entry,
-      stop, tp,
-      commission,
-      entryDate: new Date(entryDt).toISOString(),
-      exitDate:  exitDt ? new Date(exitDt).toISOString() : new Date(entryDt).toISOString(),
-      notes,
-      tags: tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : ['manual']
-    });
-
+    if (!symbol) { UI.toast('Symbol is required', 'error'); return; }
+    if (!qty || qty <= 0) { UI.toast('Quantity is required', 'error'); return; }
+    if (!entry) { UI.toast('Entry price is required', 'error'); return; }
+    if (!entryDt) { UI.toast('Entry date is required', 'error'); return; }
+    const trade = DataStore.enrichTrade({ symbol, side, qty, entry, exit: exit || entry, stop, tp, commission, entryDate: new Date(entryDt).toISOString(), exitDate: exitDt ? new Date(exitDt).toISOString() : new Date(entryDt).toISOString(), notes, tags: tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : ['manual'] });
     DataStore.addTrade(trade);
     UI.toast(`✓ Trade added: ${symbol}`, 'success');
-    // Save to cloud
     if (CloudStore.isOnline()) CloudStore.saveTrade(trade);
     clearManualForm();
     refreshDashboard();
@@ -910,53 +670,30 @@ const App = (() => {
       document.querySelectorAll('.note-item').forEach(n => n.classList.remove('active'));
       document.getElementById('noteTitleInput').focus();
     });
-
     document.getElementById('saveNoteBtn').addEventListener('click', saveNote);
     document.getElementById('deleteNoteBtn').addEventListener('click', deleteNote);
-
     document.getElementById('noteSearch').addEventListener('input', renderNotesList);
   }
 
   function renderNotesList() {
     const search = document.getElementById('noteSearch').value.toLowerCase();
     let notes = DataStore.getNotes();
-
-    if (search) {
-      notes = notes.filter(n =>
-        (n.title || '').toLowerCase().includes(search) ||
-        (n.body || '').toLowerCase().includes(search) ||
-        (n.tags || []).some(t => t.toLowerCase().includes(search))
-      );
-    }
-
+    if (search) notes = notes.filter(n => (n.title || '').toLowerCase().includes(search) || (n.body || '').toLowerCase().includes(search) || (n.tags || []).some(t => t.toLowerCase().includes(search)));
     const list = document.getElementById('notesList');
-    if (!notes.length) {
-      list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No notes yet</div>`;
-      return;
-    }
-
-    list.innerHTML = notes.map(n => `
-      <div class="note-item ${n.id === activeNoteId ? 'active' : ''}" onclick="App.openNote('${n.id}')">
-        <div class="note-item-title">${n.title || 'Untitled'}</div>
-        <div class="note-item-preview">${(n.body || '').slice(0, 60)}${(n.body || '').length > 60 ? '…' : ''}</div>
-        <div class="note-item-date">${UI.fmtDate(n.updatedAt)}</div>
-      </div>`).join('');
+    if (!notes.length) { list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No notes yet</div>`; return; }
+    list.innerHTML = notes.map(n => `<div class="note-item ${n.id === activeNoteId ? 'active' : ''}" onclick="App.openNote('${n.id}')"><div class="note-item-title">${n.title || 'Untitled'}</div><div class="note-item-preview">${(n.body || '').slice(0, 60)}${(n.body || '').length > 60 ? '…' : ''}</div><div class="note-item-date">${UI.fmtDate(n.updatedAt)}</div></div>`).join('');
   }
 
   function openNote(id) {
     const note = DataStore.getNotes().find(n => n.id === id);
     if (!note) return;
     activeNoteId = id;
-
     document.getElementById('noteTitleInput').value = note.title || '';
     document.getElementById('noteBodyInput').value = note.body || '';
     document.getElementById('noteTagsInput').value = (note.tags || []).join(', ');
-    document.getElementById('noteMeta').textContent =
-      `Created ${UI.fmtDate(note.createdAt)} · Updated ${UI.fmtDate(note.updatedAt)}`;
-
+    document.getElementById('noteMeta').textContent = `Created ${UI.fmtDate(note.createdAt)} · Updated ${UI.fmtDate(note.updatedAt)}`;
     document.getElementById('noteEditorEmpty').style.display = 'none';
     document.getElementById('noteEditorActive').style.display = 'flex';
-
     document.querySelectorAll('.note-item').forEach(n => n.classList.remove('active'));
     document.querySelector(`.note-item[onclick*="${id}"]`)?.classList.add('active');
   }
@@ -965,18 +702,9 @@ const App = (() => {
     const title = document.getElementById('noteTitleInput').value.trim();
     const body = document.getElementById('noteBodyInput').value;
     const tags = document.getElementById('noteTagsInput').value.split(',').map(t => t.trim()).filter(Boolean);
-
     if (!title && !body) { UI.toast('Note is empty', 'warn'); return; }
-
-    if (activeNoteId) {
-      DataStore.updateNote(activeNoteId, { title, body, tags });
-      UI.toast('Note saved ✓', 'success');
-    } else {
-      const note = DataStore.addNote({ title, body, tags });
-      activeNoteId = note.id;
-      UI.toast('Note created ✓', 'success');
-    }
-
+    if (activeNoteId) { DataStore.updateNote(activeNoteId, { title, body, tags }); UI.toast('Note saved ✓', 'success'); }
+    else { const note = DataStore.addNote({ title, body, tags }); activeNoteId = note.id; UI.toast('Note created ✓', 'success'); }
     renderNotesList();
   }
 
@@ -994,37 +722,16 @@ const App = (() => {
   // ── MODAL ────────────────────────────────────────────────
   function bindModal() {
     document.getElementById('modalClose').addEventListener('click', UI.closeModal);
-    document.getElementById('tradeModal').addEventListener('click', e => {
-      if (e.target === e.currentTarget) UI.closeModal();
-    });
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') UI.closeModal();
-    });
+    document.getElementById('tradeModal').addEventListener('click', e => { if (e.target === e.currentTarget) UI.closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') UI.closeModal(); });
   }
 
   // ── EXPORT ───────────────────────────────────────────────
-  function exportCSV() {
-    const csv = DataStore.exportCSV();
-    downloadFile(csv, 'tradeforge-trades.csv', 'text/csv');
-    UI.toast('CSV exported ✓', 'success');
-  }
+  function exportCSV() { downloadFile(DataStore.exportCSV(), 'tradeforge-trades.csv', 'text/csv'); UI.toast('CSV exported ✓', 'success'); }
+  function exportAll() { downloadFile(DataStore.exportJSON(), 'tradeforge-backup.json', 'application/json'); UI.toast('Backup exported ✓', 'success'); }
+  function downloadFile(content, filename, mime) { const blob = new Blob([content], { type: mime }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url); }
 
-  function exportAll() {
-    const json = DataStore.exportJSON();
-    downloadFile(json, 'tradeforge-backup.json', 'application/json');
-    UI.toast('Backup exported ✓', 'success');
-  }
-
-  function downloadFile(content, filename, mime) {
-    const blob = new Blob([content], { type: mime });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  // ── PUBLIC ───────────────────────────────────────────────
+  // ── PUBLIC API ───────────────────────────────────────────
   return {
     init,
     navigateTo,
@@ -1040,5 +747,4 @@ const App = (() => {
   };
 })();
 
-// ── BOOTSTRAP ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', App.init);
