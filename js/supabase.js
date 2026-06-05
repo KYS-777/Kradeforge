@@ -308,14 +308,52 @@ const CloudStore = (() => {
     } catch (e) {}
   }
 
+  // Delete ALL trades for the current user from cloud (used by Clear All)
+  async function deleteAllTrades() {
+    if (!isOnline()) return;
+    try {
+      const uid = SupabaseClient.getUserId();
+      // Delete all rows where user_id matches — single REST call
+      const url = `${SUPABASE_URL}/rest/v1/trades?user_id=eq.${uid}`;
+      await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON,
+          'Authorization': `Bearer ${SupabaseClient.getSession()?.access_token || SUPABASE_ANON}`
+        }
+      });
+    } catch (e) {
+      console.warn('CloudStore.deleteAllTrades failed:', e.message);
+    }
+  }
+
+  // Delete ALL notes for the current user from cloud
+  async function deleteAllNotes() {
+    if (!isOnline()) return;
+    try {
+      const uid = SupabaseClient.getUserId();
+      const url = `${SUPABASE_URL}/rest/v1/notes?user_id=eq.${uid}`;
+      await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON,
+          'Authorization': `Bearer ${SupabaseClient.getSession()?.access_token || SUPABASE_ANON}`
+        }
+      });
+    } catch (e) {
+      console.warn('CloudStore.deleteAllNotes failed:', e.message);
+    }
+  }
+
   function setOnline(val) { _online = val; }
 
   return {
     isOnline, setOnline,
-    loadTrades, saveTrade, deleteTrade, syncLocalTrades,
-    loadNotes, saveNote, deleteNote,
+    loadTrades, saveTrade, deleteTrade, deleteAllTrades, syncLocalTrades,
+    loadNotes, saveNote, deleteNote, deleteAllNotes,
     loadSettings, saveSettings
   };
 
 })();
-
