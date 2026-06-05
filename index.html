@@ -7,11 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#0a0b0d" />
-  <title>KradeForge — Trading Journal</title>
+  <title>KradeForge — Advanced Trading Journal</title>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="js/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
@@ -90,6 +91,21 @@
           </div>
         </div>
         <button class="add-trade-btn" id="addTradeBtn">+ Add Trade</button>
+        <!-- User menu -->
+        <div class="user-menu" id="userMenu">
+          <button class="user-avatar" id="userAvatarBtn">
+            <span id="userInitial">?</span>
+          </button>
+          <div class="user-dropdown" id="userDropdown" style="display:none">
+            <div class="user-info">
+              <div class="user-name" id="dropdownName">User</div>
+              <div class="user-email" id="dropdownEmail">—</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <button class="user-dropdown-item" onclick="App.openBalanceModal()">💰 Set Balance</button>
+            <button class="user-dropdown-item danger" onclick="App.signOut()">⬡ Sign Out</button>
+          </div>
+        </div>
       </div>
     </header>
 
