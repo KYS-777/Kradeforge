@@ -150,6 +150,21 @@ const DataStore = (() => {
     save();
   }
 
+  // ── REPLACE ALL TRADES (from cloud) ──────────────────────
+  // Used when loading data from Supabase on login.
+  // Replaces local cache with cloud data.
+  function replaceAllTrades(newTrades) {
+    trades = newTrades || [];
+    migrateRMultiples();
+    save();
+  }
+
+  // ── REPLACE ALL NOTES (from cloud) ───────────────────────
+  function replaceAllNotes(newNotes) {
+    notes = newNotes || [];
+    save();
+  }
+
   // ── NOTES CRUD ───────────────────────────────────────────
   function addNote(note) {
     note.id = generateId();
@@ -303,6 +318,7 @@ const DataStore = (() => {
   // ── PUBLIC API ────────────────────────────────────────────
   return {
     addTrades, addTrade, updateTrade, deleteTrade, getTrades, clearAll,
+    replaceAllTrades, replaceAllNotes,
     addNote, updateNote, deleteNote, getNotes,
     getSettings, saveSettings,
     exportJSON, exportCSV,
