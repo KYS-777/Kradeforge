@@ -77,6 +77,150 @@ const BrokerParser = (() => {
     return { trades, broker: broker.name, logMessages };
   }
 
+
+  // ══════════════════════════════════════════════════════════
+  // SCREENSHOT PARSER
+  // Uses Claude AI vision to extract trade data from any
+  // broker screenshot — MT4, MT5, Exness, OANDA, any platform.
+  //
+  // How it works:
+  // 1. Convert image to base64
+  // 2. Send to Claude API with a structured extraction prompt
+  // 3. Claude reads the screenshot and returns JSON trade data
+  // 4. We parse the JSON and create trade objects
+  // ══════════════════════════════════════════════════════════
+  async function parseScreenshot(file, logMessages) {
+    log(`🖼 Screenshot detected — using AI to read trade data…`, logMessages, 'success');
+
+    try {
+      // Convert image to base64
+      const base64 = await fileToBase64(file);
+      const mediaType = `image/${file.name.split('.').pop().toLowerCase().replace('jpg','jpeg')}`;
+
+      log(`🤖 Sending to AI for analysis…`, logMessages);
+
+      // Call Claude API to extract trades from screenshot
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 2000,
+          messages: [{
+            role: 'user',
+            content: [
+              {
+                type: 'image',
+                source: { type: 'base64', media_type: mediaType, data: base64 }
+              },
+              {
+                type: 'text',
+                text: `You are a trading data extractor. Look at this trading platform screenshot and extract ALL closed trades you can see.
+
+Return ONLY a valid JSON array, nothing else. No explanation, no markdown, no backticks.
+
+Each trade object must have these fields (use null if not visible):
+{
+  "symbol": "XAU/USD",
+  "side": "LONG" or "SHORT" (buy=LONG, sell=SHORT),
+  "lots": 0.12,
+  "entry": 4535.57,
+  "exit": 4539.81,
+  "profit": -50.92,
+  "entryTime": "2026-05-26T10:46:06",
+  "exitTime": "2026-05-26T10:50:25",
+  "stopLoss": null,
+  "takeProfit": null,
+  "ticket": "12345"
+}
+
+Rules:
+- side: if you see "buy" or "B" = "LONG", if "sell" or "S" = "SHORT"
+- profit: include the sign (negative for loss)
+- symbol: normalize to format like XAU/USD, EUR/USD
+- If multiple trades visible, include all of them
+- If a field is not visible, use null
+- Return [] if no trades found
+
+JSON array:`
+              }
+            ]
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(`AI API error: ${err.error?.message || response.status}`);
+      }
+
+      const data = await response.json();
+      const text = data.content?.[0]?.text || '[]';
+
+      log(`✓ AI response received`, logMessages, 'success');
+
+      // Parse the JSON response
+      let extracted = [];
+      try {
+        // Clean up response — remove any markdown if AI added it
+        const clean = text.replace(/```json|```/g, '').trim();
+        extracted = JSON.parse(clean);
+        if (!Array.isArray(extracted)) extracted = [extracted];
+      } catch (e) {
+        throw new Error(`AI could not parse trades from screenshot. Try a clearer image.`);
+      }
+
+      if (!extracted.length) {
+        log(`⚠ No trades found in screenshot`, logMessages, 'warn');
+        return { trades: [], broker: 'Screenshot (AI)', logMessages };
+      }
+
+      log(`✓ AI found ${extracted.length} trade(s) in screenshot`, logMessages, 'success');
+
+      // Convert extracted data to trade objects
+      const trades = [];
+      for (const t of extracted) {
+        try {
+          if (!t.symbol) continue;
+          const trade = DataStore.enrichTrade({
+            symbol:     normalizeSymbol(t.symbol || ''),
+            side:       (t.side || 'LONG').toUpperCase(),
+            qty:        parseFloat(t.lots) || 0.01,
+            entry:      parseFloat(t.entry) || 0,
+            exit:       parseFloat(t.exit)  || 0,
+            pnl:        t.profit !== null ? parseFloat(t.profit) : undefined,
+            stop:       t.stopLoss ? parseFloat(t.stopLoss) : undefined,
+            tp:         t.takeProfit ? parseFloat(t.takeProfit) : undefined,
+            commission: 0,
+            entryDate:  t.entryTime ? new Date(t.entryTime).toISOString() : new Date().toISOString(),
+            exitDate:   t.exitTime  ? new Date(t.exitTime).toISOString()  : new Date().toISOString(),
+            notes:      `Screenshot import${t.ticket ? ' | Ticket: ' + t.ticket : ''}`,
+            tags:       ['screenshot', 'ai-import']
+          });
+          if (trade.symbol) trades.push(trade);
+          log(`  → ${trade.symbol} ${trade.side} ${trade.qty}L | P&L: $${trade.pnl}`, logMessages, 'success');
+        } catch (e) {}
+      }
+
+      return { trades, broker: 'Screenshot (AI Vision)', logMessages };
+
+    } catch (e) {
+      log(`✗ Screenshot parse failed: ${e.message}`, logMessages, 'error');
+      log(`💡 Tip: Use a clear screenshot showing trade history table`, logMessages, 'warn');
+      throw e;
+    }
+  }
+
+  // Convert File to base64 string
+  function fileToBase64(file) {
+    return new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload  = e => res(e.target.result.split(',')[1]);
+      reader.onerror = () => rej(new Error('Image read failed'));
+      reader.readAsDataURL(file);
+    });
+  }
+
   // ══════════════════════════════════════════════════════════
   // BROKER DETECTION
   // Checks filename + headers to identify which parser to use.
