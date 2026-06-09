@@ -697,6 +697,10 @@ const App = (() => {
     document.getElementById('confirmImportBtn').addEventListener('click', confirmImport);
     document.getElementById('cancelImportBtn').addEventListener('click', () => {
       document.getElementById('previewSection').style.display = 'none';
+      const preview = document.getElementById('screenshotPreview');
+      const aiEl    = document.getElementById('aiProcessing');
+      if (preview) preview.classList.remove('show');
+      if (aiEl)    aiEl.classList.remove('show');
       pendingImport = [];
     });
   }
@@ -711,12 +715,36 @@ const App = (() => {
       UI.appendImportLog(logMessages);
     };
 
-    addLog(`📄 Reading: ${file.name}`);
+    // ── Show screenshot preview if image file ─────────────
+    const ext = file.name.split('.').pop().toLowerCase();
+    const isImage = ['png','jpg','jpeg','webp','gif'].includes(ext);
+
+    if (isImage) {
+      // Show image preview
+      const reader = new FileReader();
+      reader.onload = e => {
+        const preview = document.getElementById('screenshotPreview');
+        const img     = document.getElementById('screenshotImg');
+        if (img)     img.src = e.target.result;
+        if (preview) preview.classList.add('show');
+      };
+      reader.readAsDataURL(file);
+
+      // Show AI processing indicator
+      const aiEl = document.getElementById('aiProcessing');
+      if (aiEl) aiEl.classList.add('show');
+    }
+
+    addLog(isImage ? `🖼 Screenshot: ${file.name}` : `📄 Reading: ${file.name}`);
 
     try {
       const result = await BrokerParser.parseFile(file);
       result.logMessages.forEach(l => logMessages.push(l));
       UI.appendImportLog(logMessages);
+
+      // Hide AI processing indicator
+      const aiEl = document.getElementById('aiProcessing');
+      if (aiEl) aiEl.classList.remove('show');
 
       if (!result.trades.length) {
         addLog('⚠ No trades could be parsed from this file.', 'warn');
