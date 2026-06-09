@@ -316,8 +316,8 @@
         <div class="import-hero">
           <div class="drop-zone" id="dropZone">
             <div class="drop-icon">⬡</div>
-            <div class="drop-title">Drop your broker export here</div>
-            <div class="drop-sub">Supports CSV, XLSX, XLS — auto-detects broker format</div>
+            <div class="drop-title">Drop file or screenshot here</div>
+            <div class="drop-sub">CSV, XLSX, XLS or Screenshot — auto-detects format</div>
             <div class="drop-formats">
               <span class="fmt-highlight">Exness MT5</span>
               <span class="fmt-highlight">Exness MT4</span>
@@ -327,24 +327,28 @@
               <span>Plus500</span>
               <span>eToro</span>
               <span>Capital.com</span>
-              <span>Deriv</span>
+              <span>Deriv / Binary</span>
               <span>Binance</span>
               <span>Bybit</span>
-              <span>Interactive Brokers</span>
-              <span>TD Ameritrade</span>
-              <span>Schwab</span>
-              <span>E*TRADE</span>
-              <span>Robinhood</span>
-              <span>Webull</span>
-              <span>Tastytrade</span>
-              <span>Fidelity</span>
-              <span>TradeStation</span>
               <span>Generic CSV</span>
             </div>
             <label class="btn-browse">
-              Browse File
-              <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.txt" hidden />
+              📂 Browse File or Screenshot
+              <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.txt,.png,.jpg,.jpeg,.webp" hidden />
             </label>
+            <!-- Screenshot preview shown after image drop -->
+            <div class="screenshot-preview" id="screenshotPreview">
+              <img id="screenshotImg" src="" alt="Screenshot preview" />
+              <div class="screenshot-preview-label">🤖 AI Reading…</div>
+            </div>
+            <!-- AI processing indicator -->
+            <div class="ai-processing" id="aiProcessing">
+              <div class="ai-spinner"></div>
+              <span>AI is reading your screenshot and extracting trades…</span>
+            </div>
+            <div class="drop-screenshot-tip">
+              📸 <span><strong>New!</strong> Drop a screenshot of your trade history — AI will automatically read and import all trades</span>
+            </div>
           </div>
           <div class="import-log" id="importLog">
             <div class="import-log-title">Import Log</div>
