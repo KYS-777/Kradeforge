@@ -37,11 +37,12 @@
       color: var(--text);
       min-height: 100vh;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       padding: 20px;
       position: relative;
-      overflow: hidden;
+      overflow-y: auto;      /* allow page scroll */
+      overflow-x: hidden;
     }
 
     /* Background grid pattern */
@@ -75,10 +76,11 @@
       border-radius: 16px;
       width: 100%;
       max-width: 420px;
-      padding: 36px 32px;
+      padding: 32px 28px;
       position: relative;
       z-index: 1;
       box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+      margin: auto 0;         /* center vertically when space allows */
     }
 
     /* Top accent line */
@@ -381,8 +383,20 @@
 
     /* ── MOBILE ───────────────────────────────────────────── */
     @media (max-width: 480px) {
-      .auth-card { padding: 24px 20px; border-radius: 12px; }
-      .auth-logo-name { font-size: 18px; }
+      body { padding: 12px; align-items: flex-start; }
+      .auth-card {
+        padding: 20px 16px;
+        border-radius: 12px;
+        width: 100%;
+      }
+      .auth-logo { margin-bottom: 16px; }
+      .auth-logo-name { font-size: 17px; }
+      .auth-logo-tag { display: none; }
+      .auth-tabs { margin-bottom: 16px; }
+      .field { margin-bottom: 12px; }
+      .field input { padding: 9px 12px; font-size: 13px; }
+      .form-subtitle { margin-bottom: 14px; font-size: 12px; }
+      .btn-auth { padding: 11px; font-size: 13px; }
     }
   </style>
 </head>
