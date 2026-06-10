@@ -17,8 +17,8 @@
    4. localStorage used as fast local cache
    ============================================================ */
 
-const SUPABASE_URL    = 'https://nkdgthaerzxahjxrzpcl.supabase.co';
-const SUPABASE_ANON   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rZGd0aGFlcnp4YWhqeHJ6cGNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MDY0NjUsImV4cCI6MjA5NjE4MjQ2NX0.O0cF0LzqJh2vEbBUaRsCqXg0oxSasSJpFFimKTP5cJA';
+const SUPABASE_URL    = 'https://zcqhfnzsmvmtzaphfmup.supabase.co';
+const SUPABASE_ANON   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpjcWhmbnpzbXZtdHphcGhmbXVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNzU4NjUsImV4cCI6MjA5NjY1MTg2NX0.aNaph0fsdUpXgcV8OkDnHX5-mHybYaa1Z8MhXcJQVmc';
 
 /* ============================================================
    SupabaseClient — Low-level HTTP wrapper for Supabase REST API
