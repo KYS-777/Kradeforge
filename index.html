@@ -141,6 +141,24 @@
       </button>
       <div class="topbar-title" id="topbarTitle">Dashboard</div>
       <div class="topbar-right">
+        <!-- Theme toggle -->
+        <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">
+          <span class="theme-icon-dark">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </span>
+          <span class="theme-icon-light" style="display:none">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </span>
+        </button>
+        <!-- Settings -->
+        <button class="topbar-icon-btn" id="settingsBtn" title="Settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+        <!-- Notification bell -->
+        <button class="topbar-icon-btn" id="notifBtn" title="Notifications">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </button>
+        <div class="topbar-divider"></div>
         <div class="account-balance-pill" id="balancePill" title="Click to set starting balance">
           <div class="pill-inner">
             <div class="pill-row">
@@ -175,6 +193,160 @@
         </div>
       </div>
     </header>
+
+    <!-- SETTINGS PANEL -->
+    <div class="settings-panel" id="settingsPanel">
+      <div class="settings-overlay" id="settingsOverlay"></div>
+      <div class="settings-drawer">
+        <div class="settings-head">
+          <div class="settings-head-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Settings
+          </div>
+          <button class="settings-close" id="settingsClose">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="settings-body">
+
+          <!-- Appearance -->
+          <div class="settings-section">
+            <div class="settings-section-label">Appearance</div>
+
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-title">Theme</div>
+                <div class="settings-row-sub">Switch between dark and light mode</div>
+              </div>
+              <div class="theme-switcher">
+                <button class="theme-opt active" data-theme="dark">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                  Dark
+                </button>
+                <button class="theme-opt" data-theme="light">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+                  Light
+                </button>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-title">Accent Color</div>
+                <div class="settings-row-sub">Choose your brand color</div>
+              </div>
+              <div class="accent-swatches">
+                <button class="swatch active" data-accent="gold"   style="background:#C9A84C" title="Gold"></button>
+                <button class="swatch"        data-accent="blue"   style="background:#5B8EFF" title="Blue"></button>
+                <button class="swatch"        data-accent="green"  style="background:#00D68F" title="Green"></button>
+                <button class="swatch"        data-accent="purple" style="background:#A78BFA" title="Purple"></button>
+                <button class="swatch"        data-accent="rose"   style="background:#FF4F6E" title="Rose"></button>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-title">Compact Mode</div>
+                <div class="settings-row-sub">Tighter spacing for more data</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="compactToggle"/>
+                <span class="toggle-track"><span class="toggle-thumb"></span></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Trading -->
+          <div class="settings-section">
+            <div class="settings-section-label">Trading Preferences</div>
+
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-title">Default Currency</div>
+                <div class="settings-row-sub">Display currency for P&amp;L</div>
+              </div>
+              <select class="settings-select" id="currencySelect">
+                <option value="USD">USD $</option>
+                <option value="EUR">EUR €</option>
+                <option value="GBP">GBP £</option>
+                <option value="ETB">ETB Br</option>
+              </select>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-title">Trades Per Page</div>
+                <div class="settings-row-sub">Rows shown in trade log</div>
+              </div>
+              <select class="settings-select" id="perPageSelect">
+                <option value="25">25</option>
+                <option value="50" selected>50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-title">Show Commissions</div>
+                <div class="settings-row-sub">Include swap/commission in P&amp;L</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="commissionToggle" checked/>
+                <span class="toggle-track"><span class="toggle-thumb"></span></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Account -->
+          <div class="settings-section">
+            <div class="settings-section-label">Account</div>
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-title">Starting Balance</div>
+                <div class="settings-row-sub">Your account base capital</div>
+              </div>
+              <button class="settings-btn-sm" onclick="App.openBalanceModal(); KF.closeSettings()">Edit</button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-title">Export All Data</div>
+                <div class="settings-row-sub">Download trades as CSV</div>
+              </div>
+              <button class="settings-btn-sm" onclick="document.getElementById('exportAllBtn').click(); KF.closeSettings()">Export</button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-title">Clear All Data</div>
+                <div class="settings-row-sub" style="color:var(--red)">Permanently delete all trades</div>
+              </div>
+              <button class="settings-btn-sm danger" onclick="document.getElementById('clearDataBtn').click(); KF.closeSettings()">Clear</button>
+            </div>
+          </div>
+
+          <!-- About -->
+          <div class="settings-section">
+            <div class="settings-section-label">About</div>
+            <div class="settings-about">
+              <div class="settings-about-logo">
+                <svg width="28" height="28" viewBox="0 0 56 56" fill="none"><defs><linearGradient id="abg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FFF0BC"/><stop offset="40%" stop-color="#D4A832"/><stop offset="100%" stop-color="#7A5A0A"/></linearGradient></defs><path d="M28 3 L51 13 L51 32 Q51 45 28 53 Q5 45 5 32 L5 13 Z" fill="#0D0F14"/><path d="M28 3 L51 13 L51 32 Q51 45 28 53 Q5 45 5 32 L5 13 Z" fill="none" stroke="url(#abg1)" stroke-width="1.6" opacity="0.75"/><path d="M22 12 L33 12 L26 28 L32 28 L20 44 L25 29 L19 29 Z" fill="url(#abg1)"/></svg>
+              </div>
+              <div>
+                <div class="settings-about-name">KradeForge</div>
+                <div class="settings-about-ver">Version 2.0 · Advanced Trading Journal</div>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-title">Sign Out</div>
+                <div class="settings-row-sub">Log out of your account</div>
+              </div>
+              <button class="settings-btn-sm danger" onclick="App.signOut()">Sign Out</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
 
     <!-- PAGES -->
     <div class="pages-container">
@@ -649,6 +821,102 @@
       }, 500);
       setTimeout(() => clearInterval(t), 10000);
     });
+  </script>
+  <script>
+  // KradeForge UI Controller
+  const KF = (() => {
+    let _theme = localStorage.getItem('kf_theme') || 'dark';
+    let _accent = localStorage.getItem('kf_accent') || 'gold';
+
+    const ACCENTS = {
+      gold:   { main:'#C9A84C', bright:'#E8C76A', pale:'#F5E0A0', dim:'rgba(201,168,76,0.12)', border:'rgba(201,168,76,0.22)', glow:'rgba(201,168,76,0.06)' },
+      blue:   { main:'#5B8EFF', bright:'#7AAAFF', pale:'#B8CFFF', dim:'rgba(91,142,255,0.12)',  border:'rgba(91,142,255,0.25)',  glow:'rgba(91,142,255,0.06)' },
+      green:  { main:'#00D68F', bright:'#2EEBB0', pale:'#9AFFD9', dim:'rgba(0,214,143,0.12)',   border:'rgba(0,214,143,0.25)',   glow:'rgba(0,214,143,0.06)' },
+      purple: { main:'#A78BFA', bright:'#C4B0FF', pale:'#DDD6FF', dim:'rgba(167,139,250,0.12)', border:'rgba(167,139,250,0.25)', glow:'rgba(167,139,250,0.06)' },
+      rose:   { main:'#FF4F6E', bright:'#FF7A90', pale:'#FFB8C6', dim:'rgba(255,79,110,0.12)',  border:'rgba(255,79,110,0.25)',  glow:'rgba(255,79,110,0.06)' },
+    };
+
+    function applyTheme(t) {
+      _theme = t;
+      localStorage.setItem('kf_theme', t);
+      document.documentElement.setAttribute('data-theme', t);
+      // Update toggle icons
+      const dark = document.querySelector('.theme-icon-dark');
+      const light = document.querySelector('.theme-icon-light');
+      if (dark)  dark.style.display  = t === 'dark'  ? 'flex' : 'none';
+      if (light) light.style.display = t === 'light' ? 'flex' : 'none';
+      // Update settings buttons
+      document.querySelectorAll('.theme-opt').forEach(b => {
+        b.classList.toggle('active', b.dataset.theme === t);
+      });
+    }
+
+    function applyAccent(a) {
+      _accent = a;
+      localStorage.setItem('kf_accent', a);
+      const c = ACCENTS[a] || ACCENTS.gold;
+      const r = document.documentElement;
+      r.style.setProperty('--gold',        c.main);
+      r.style.setProperty('--gold2',       c.bright);
+      r.style.setProperty('--gold3',       c.pale);
+      r.style.setProperty('--gold-dim',    c.dim);
+      r.style.setProperty('--gold-border', c.border);
+      r.style.setProperty('--gold-glow',   c.glow);
+      document.querySelectorAll('.swatch').forEach(b => {
+        b.classList.toggle('active', b.dataset.accent === a);
+      });
+    }
+
+    function openSettings() {
+      document.getElementById('settingsPanel').classList.add('open');
+    }
+    function closeSettings() {
+      document.getElementById('settingsPanel').classList.remove('open');
+    }
+
+    function init() {
+      // Apply saved preferences
+      applyTheme(_theme);
+      applyAccent(_accent);
+
+      // Theme toggle button (topbar)
+      document.getElementById('themeToggle')?.addEventListener('click', () => {
+        applyTheme(_theme === 'dark' ? 'light' : 'dark');
+      });
+
+      // Settings open/close
+      document.getElementById('settingsBtn')?.addEventListener('click', openSettings);
+      document.getElementById('settingsClose')?.addEventListener('click', closeSettings);
+      document.getElementById('settingsOverlay')?.addEventListener('click', closeSettings);
+
+      // Theme switcher in settings
+      document.querySelectorAll('.theme-opt').forEach(b => {
+        b.addEventListener('click', () => applyTheme(b.dataset.theme));
+      });
+
+      // Accent swatches
+      document.querySelectorAll('.swatch').forEach(b => {
+        b.addEventListener('click', () => applyAccent(b.dataset.accent));
+      });
+
+      // Compact mode
+      const compactToggle = document.getElementById('compactToggle');
+      const isCompact = localStorage.getItem('kf_compact') === '1';
+      if (compactToggle) {
+        compactToggle.checked = isCompact;
+        if (isCompact) document.documentElement.classList.add('compact');
+        compactToggle.addEventListener('change', () => {
+          const on = compactToggle.checked;
+          document.documentElement.classList.toggle('compact', on);
+          localStorage.setItem('kf_compact', on ? '1' : '0');
+        });
+      }
+    }
+
+    return { init, openSettings, closeSettings, applyTheme, applyAccent };
+  })();
+
+  document.addEventListener('DOMContentLoaded', KF.init);
   </script>
 </body>
 </html>
