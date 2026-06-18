@@ -6,11 +6,11 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#0a0b0d" />
+  <meta name="theme-color" content="#0C0D0F" />
   <title>KradeForge — Advanced Trading Journal</title>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="js/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
@@ -19,51 +19,112 @@
   <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/customParseFormat.js"></script>
 </head>
 <body>
+
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
       <div class="logo-kradeforge">
-        <!-- KradeForge K icon -->
-        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="36" height="36" rx="6" fill="#0d1117"/>
-          <!-- Left vertical bar of K -->
-          <rect x="7" y="6" width="4" height="24" rx="1" fill="#8bb8d4"/>
-          <!-- Inner vertical accent -->
-          <rect x="11" y="6" width="1.5" height="24" rx="0.5" fill="#6a9ab8"/>
-          <!-- Top arm of K -->
-          <path d="M13 18 L26 7" stroke="#8bb8d4" stroke-width="3.5" stroke-linecap="round"/>
-          <!-- Bottom arm of K -->
-          <path d="M13 18 L26 29" stroke="#8bb8d4" stroke-width="3.5" stroke-linecap="round"/>
+        <!-- KradeForge Mark: Golden Shield + Lightning Strike -->
+        <svg width="40" height="40" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="sg1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%"   stop-color="#FFF0BC"/>
+              <stop offset="40%"  stop-color="#D4A832"/>
+              <stop offset="100%" stop-color="#7A5A0A"/>
+            </linearGradient>
+            <linearGradient id="sg2" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%"   stop-color="#F5E0A0" stop-opacity="0.22"/>
+              <stop offset="100%" stop-color="#C9A84C" stop-opacity="0"/>
+            </linearGradient>
+            <radialGradient id="sgCore" cx="50%" cy="42%" r="50%">
+              <stop offset="0%"   stop-color="#FFE97A" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#C9A84C" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="sfGlow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="2.8" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="sfSoft" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="1.5" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <path d="M28 3 L51 13 L51 32 Q51 45 28 53 Q5 45 5 32 L5 13 Z" fill="#0D0F14"/>
+          <path d="M28 3 L51 13 L51 32 Q51 45 28 53 Q5 45 5 32 L5 13 Z" fill="none" stroke="url(#sg1)" stroke-width="1.6" opacity="0.75"/>
+          <path d="M28 3 L51 13 L51 32 Q51 45 28 53 Q5 45 5 32 L5 13 Z" fill="url(#sg2)"/>
+          <path d="M28 3 L51 13 L51 32 Q51 45 28 53 Q5 45 5 32 L5 13 Z" fill="url(#sgCore)"/>
+          <path d="M28 9 L46 17 L46 32 Q46 42 28 48 Q10 42 10 32 L10 17 Z" fill="none" stroke="#C9A84C" stroke-width="0.6" opacity="0.18"/>
+          <path d="M22 12 L33 12 L26 28 L32 28 L20 44 L25 29 L19 29 Z" fill="url(#sg1)" filter="url(#sfGlow)"/>
+          <path d="M22 12 L33 12 L26 28 L32 28" fill="none" stroke="#FFF0BC" stroke-width="0.9" opacity="0.55" stroke-linejoin="round"/>
+          <line x1="37" y1="14" x2="41" y2="10" stroke="#F5E0A0" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+          <line x1="39" y1="17" x2="44" y2="15" stroke="#C9A84C" stroke-width="1"   stroke-linecap="round" opacity="0.5"/>
+          <line x1="38" y1="21" x2="44" y2="21" stroke="#C9A84C" stroke-width="0.8" stroke-linecap="round" opacity="0.3"/>
+          <line x1="16" y1="37" x2="12" y2="41" stroke="#C9A84C" stroke-width="1"   stroke-linecap="round" opacity="0.4"/>
+          <line x1="14" y1="33" x2="10" y2="34" stroke="#C9A84C" stroke-width="0.8" stroke-linecap="round" opacity="0.3"/>
+          <circle cx="28" cy="5"  r="2.2" fill="#FFF0BC" opacity="0.9" filter="url(#sfSoft)"/>
+          <circle cx="28" cy="5"  r="1"   fill="#ffffff"  opacity="0.8"/>
+          <circle cx="28" cy="51" r="2.5" fill="#C9A84C" opacity="0.45" filter="url(#sfSoft)"/>
+          <circle cx="28" cy="51" r="1.2" fill="#E8C76A" opacity="0.7"/>
         </svg>
         <div class="logo-text-block">
-          <span class="logo-name">KradeForge</span>
+          <span class="logo-name">Krade<span>Forge</span></span>
           <span class="logo-tagline">Build · Review · Improve</span>
         </div>
       </div>
     </div>
+
     <nav class="sidebar-nav">
+      <span class="nav-section-label">Main</span>
       <a href="#" class="nav-item active" data-page="dashboard">
-        <span class="nav-icon">◈</span><span>Dashboard</span>
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </span>
+        <span>Dashboard</span>
       </a>
       <a href="#" class="nav-item" data-page="trades">
-        <span class="nav-icon">◉</span><span>Trade Log</span>
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </span>
+        <span>Trade Log</span>
       </a>
       <a href="#" class="nav-item" data-page="analytics">
-        <span class="nav-icon">◐</span><span>Analytics</span>
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </span>
+        <span>Analytics</span>
       </a>
       <a href="#" class="nav-item" data-page="calendar">
-        <span class="nav-icon">◫</span><span>Calendar</span>
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </span>
+        <span>Calendar</span>
       </a>
+
+      <span class="nav-section-label">Tools</span>
       <a href="#" class="nav-item" data-page="import">
-        <span class="nav-icon">◧</span><span>Import</span>
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </span>
+        <span>Import</span>
       </a>
       <a href="#" class="nav-item" data-page="notes">
-        <span class="nav-icon">◩</span><span>Notes</span>
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </span>
+        <span>Journal Notes</span>
       </a>
     </nav>
+
     <div class="sidebar-footer">
+      <div class="sidebar-user" id="sidebarUser">
+        <div class="sidebar-user-avatar" id="sidebarUserAvatar">?</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarUserName">Loading…</div>
+          <div class="sidebar-user-role">Trader</div>
+        </div>
+      </div>
       <button class="btn-export-all" id="exportAllBtn">↓ Export Data</button>
-      <button class="btn-clear" id="clearDataBtn">✕ Clear All</button>
+      <button class="btn-clear" id="clearDataBtn">✕ Clear All Data</button>
     </div>
   </aside>
 
@@ -72,9 +133,12 @@
 
   <!-- MAIN CONTENT -->
   <main class="main-content">
+
     <!-- TOPBAR -->
     <header class="topbar">
-      <button class="menu-toggle" id="menuToggle">☰</button>
+      <button class="menu-toggle" id="menuToggle">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
       <div class="topbar-title" id="topbarTitle">Dashboard</div>
       <div class="topbar-right">
         <div class="account-balance-pill" id="balancePill" title="Click to set starting balance">
@@ -91,19 +155,22 @@
           </div>
         </div>
         <button class="add-trade-btn" id="addTradeBtn">+ Add Trade</button>
-        <!-- User menu -->
         <div class="user-menu" id="userMenu">
-          <button class="user-avatar" id="userAvatarBtn">
-            <span id="userInitial">?</span>
-          </button>
+          <button class="user-avatar" id="userAvatarBtn"><span id="userInitial">?</span></button>
           <div class="user-dropdown" id="userDropdown" style="display:none">
             <div class="user-info">
               <div class="user-name" id="dropdownName">User</div>
               <div class="user-email" id="dropdownEmail">—</div>
             </div>
             <div class="user-dropdown-divider"></div>
-            <button class="user-dropdown-item" onclick="App.openBalanceModal()">💰 Set Balance</button>
-            <button class="user-dropdown-item danger" onclick="App.signOut()">⬡ Sign Out</button>
+            <button class="user-dropdown-item" onclick="App.openBalanceModal()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              Set Balance
+            </button>
+            <button class="user-dropdown-item danger" onclick="App.signOut()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Sign Out
+            </button>
           </div>
         </div>
       </div>
@@ -112,7 +179,7 @@
     <!-- PAGES -->
     <div class="pages-container">
 
-      <!-- DASHBOARD PAGE -->
+      <!-- DASHBOARD -->
       <section class="page active" id="page-dashboard">
         <div class="page-header">
           <h1>Overview</h1>
@@ -124,9 +191,10 @@
             <button class="dfilter" data-range="ytd">YTD</button>
           </div>
         </div>
+
         <div class="stats-grid" id="statsGrid">
           <div class="stat-card accent">
-            <div class="stat-label">Net P&L</div>
+            <div class="stat-label">Net P&amp;L</div>
             <div class="stat-value" id="statNetPnl">$0.00</div>
             <div class="stat-sub" id="statNetPnlPct">0.00%</div>
           </div>
@@ -168,19 +236,19 @@
         </div>
 
         <div class="charts-row">
-          <div class="chart-card wide">
-            <div class="chart-title">Cumulative P&L</div>
+          <div class="chart-card">
+            <div class="chart-title">Cumulative P&amp;L</div>
             <canvas id="cumulativePnlChart"></canvas>
           </div>
           <div class="chart-card">
-            <div class="chart-title">Win/Loss Distribution</div>
+            <div class="chart-title">Win / Loss Distribution</div>
             <canvas id="winLossChart"></canvas>
           </div>
         </div>
 
-        <div class="charts-row">
+        <div class="charts-row three">
           <div class="chart-card">
-            <div class="chart-title">P&L by Symbol</div>
+            <div class="chart-title">P&amp;L by Symbol</div>
             <canvas id="symbolPnlChart"></canvas>
           </div>
           <div class="chart-card">
@@ -188,7 +256,7 @@
             <canvas id="dayDistChart"></canvas>
           </div>
           <div class="chart-card">
-            <div class="chart-title">P&L by Hour</div>
+            <div class="chart-title">P&amp;L by Hour</div>
             <canvas id="hourPnlChart"></canvas>
           </div>
         </div>
@@ -203,7 +271,7 @@
               <thead>
                 <tr>
                   <th>Date</th><th>Symbol</th><th>Side</th><th>Qty</th>
-                  <th>Entry</th><th>Exit</th><th>P&L</th><th>R</th><th>Status</th>
+                  <th>Entry</th><th>Exit</th><th>P&amp;L</th><th>R</th><th>Status</th>
                 </tr>
               </thead>
               <tbody id="recentTradesTbody"></tbody>
@@ -212,7 +280,7 @@
         </div>
       </section>
 
-      <!-- TRADE LOG PAGE -->
+      <!-- TRADE LOG -->
       <section class="page" id="page-trades">
         <div class="page-header">
           <h1>Trade Log</h1>
@@ -242,7 +310,7 @@
                 <th data-sort="qty">Qty ↕</th>
                 <th data-sort="entry">Entry ↕</th>
                 <th data-sort="exit">Exit ↕</th>
-                <th data-sort="pnl">P&L ↕</th>
+                <th data-sort="pnl">P&amp;L ↕</th>
                 <th data-sort="r">R ↕</th>
                 <th>Duration</th>
                 <th>Notes</th>
@@ -255,12 +323,12 @@
         <div class="pagination" id="pagination"></div>
       </section>
 
-      <!-- ANALYTICS PAGE -->
+      <!-- ANALYTICS -->
       <section class="page" id="page-analytics">
         <div class="page-header"><h1>Analytics</h1></div>
         <div class="analytics-grid">
           <div class="chart-card tall">
-            <div class="chart-title">Monthly P&L Breakdown</div>
+            <div class="chart-title">Monthly P&amp;L Breakdown</div>
             <canvas id="monthlyPnlChart"></canvas>
           </div>
           <div class="chart-card tall">
@@ -276,11 +344,11 @@
             <canvas id="symbolWinRateChart"></canvas>
           </div>
           <div class="chart-card tall">
-            <div class="chart-title">Trade Duration vs P&L</div>
+            <div class="chart-title">Trade Duration vs P&amp;L</div>
             <canvas id="durationScatterChart"></canvas>
           </div>
           <div class="chart-card tall">
-            <div class="chart-title">Consecutive Wins & Losses</div>
+            <div class="chart-title">Consecutive Wins &amp; Losses</div>
             <canvas id="streakChart"></canvas>
           </div>
         </div>
@@ -290,7 +358,7 @@
         </div>
       </section>
 
-      <!-- CALENDAR PAGE -->
+      <!-- CALENDAR -->
       <section class="page" id="page-calendar">
         <div class="page-header">
           <h1>Trade Calendar</h1>
@@ -310,12 +378,14 @@
         </div>
       </section>
 
-      <!-- IMPORT PAGE -->
+      <!-- IMPORT -->
       <section class="page" id="page-import">
         <div class="page-header"><h1>Import Trades</h1></div>
         <div class="import-hero">
           <div class="drop-zone" id="dropZone">
-            <div class="drop-icon">⬡</div>
+            <span class="drop-icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </span>
             <div class="drop-title">Drop file or screenshot here</div>
             <div class="drop-sub">CSV, XLSX, XLS or Screenshot — auto-detects format</div>
             <div class="drop-formats">
@@ -336,12 +406,10 @@
               📂 Browse File or Screenshot
               <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.txt,.png,.jpg,.jpeg,.webp" hidden />
             </label>
-            <!-- Screenshot preview shown after image drop -->
             <div class="screenshot-preview" id="screenshotPreview">
               <img id="screenshotImg" src="" alt="Screenshot preview" />
               <div class="screenshot-preview-label">🤖 AI Reading…</div>
             </div>
-            <!-- AI processing indicator -->
             <div class="ai-processing" id="aiProcessing">
               <div class="ai-spinner"></div>
               <span>AI is reading your screenshot and extracting trades…</span>
@@ -357,10 +425,11 @@
             </div>
           </div>
         </div>
+
         <div class="preview-section" id="previewSection" style="display:none">
           <div class="preview-header">
             <span id="previewInfo"></span>
-            <div>
+            <div style="display:flex;gap:8px">
               <button class="btn-secondary" id="cancelImportBtn">Cancel</button>
               <button class="btn-primary" id="confirmImportBtn">Import Trades</button>
             </div>
@@ -377,8 +446,6 @@
         <div class="manual-section">
           <h2>Or Add Manually</h2>
           <div class="manual-form" id="manualForm">
-
-            <!-- ROW 1: Symbol, Side, Qty/Lots -->
             <div class="form-row">
               <div class="form-group">
                 <label>Symbol <span class="req">*</span></label>
@@ -396,8 +463,6 @@
                 <input type="number" id="mQty" placeholder="0.01" min="0" step="any" />
               </div>
             </div>
-
-            <!-- ROW 2: Entry, Exit, P&L (auto-calculated) -->
             <div class="form-row">
               <div class="form-group">
                 <label>Entry Price <span class="req">*</span></label>
@@ -409,25 +474,18 @@
               </div>
               <div class="form-group">
                 <label>P&amp;L (auto)</label>
-                <input type="text" id="mPnlPreview" placeholder="Fills automatically" readonly
-                  style="cursor:default;background:var(--bg4);font-family:var(--font-mono);font-weight:700" />
+                <input type="text" id="mPnlPreview" placeholder="Fills automatically" readonly style="cursor:default;background:var(--bg4);font-family:var(--font-mono);font-weight:700" />
               </div>
             </div>
-
-            <!-- ROW 3: Stop Loss, Take Profit, Commission -->
             <div class="form-row">
               <div class="form-group">
                 <label>🛑 Stop Loss</label>
-                <input type="number" id="mStop" placeholder="0.000" step="any"
-                  style="border-color:rgba(255,77,106,0.4)"
-                  oninput="App.calcManualPnl()" />
+                <input type="number" id="mStop" placeholder="0.000" step="any" style="border-color:rgba(255,79,110,0.35)" oninput="App.calcManualPnl()" />
                 <span class="field-hint" id="mRiskHint"></span>
               </div>
               <div class="form-group">
                 <label>🎯 Take Profit</label>
-                <input type="number" id="mTP" placeholder="0.000" step="any"
-                  style="border-color:rgba(34,199,122,0.4)"
-                  oninput="App.calcManualPnl()" />
+                <input type="number" id="mTP" placeholder="0.000" step="any" style="border-color:rgba(0,214,143,0.35)" oninput="App.calcManualPnl()" />
                 <span class="field-hint" id="mRewardHint"></span>
               </div>
               <div class="form-group">
@@ -435,8 +493,6 @@
                 <input type="number" id="mCommission" placeholder="0.00" step="any" oninput="App.calcManualPnl()" />
               </div>
             </div>
-
-            <!-- ROW 4: Entry time, Exit time -->
             <div class="form-row">
               <div class="form-group">
                 <label>Entry Date &amp; Time <span class="req">*</span></label>
@@ -456,21 +512,16 @@
                 </select>
               </div>
             </div>
-
-            <!-- ROW 5: Notes, Tags -->
             <div class="form-row">
               <div class="form-group wide">
                 <label>Notes / Journal</label>
-                <textarea id="mNotes" rows="3"
-                  placeholder="Setup description, entry reason, what you learned…"></textarea>
+                <textarea id="mNotes" rows="3" placeholder="Setup description, entry reason, what you learned…"></textarea>
               </div>
               <div class="form-group">
                 <label>Tags</label>
                 <input type="text" id="mTags" placeholder="breakout, news, scalp, swing" />
               </div>
             </div>
-
-            <!-- R:R Preview -->
             <div class="rr-preview" id="rrPreview" style="display:none">
               <span class="rr-item">Risk: <strong id="rrRisk">—</strong></span>
               <span class="rr-sep">|</span>
@@ -478,18 +529,16 @@
               <span class="rr-sep">|</span>
               <span class="rr-item">R:R Ratio: <strong id="rrRatio">—</strong></span>
             </div>
-
             <div style="display:flex;gap:12px;align-items:center;margin-top:4px">
               <button class="btn-primary" id="submitManualBtn">＋ Add Trade</button>
               <button class="btn-secondary" id="clearManualBtn" type="button">Clear Form</button>
               <span class="req-note"><span class="req">*</span> Required fields</span>
             </div>
-
           </div>
         </div>
       </section>
 
-      <!-- NOTES PAGE -->
+      <!-- NOTES -->
       <section class="page" id="page-notes">
         <div class="page-header">
           <h1>Journal Notes</h1>
@@ -504,7 +553,9 @@
           </div>
           <div class="note-editor" id="noteEditor">
             <div class="note-editor-empty" id="noteEditorEmpty">
-              <span>◩</span>
+              <span style="font-size:40px;opacity:0.2">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </span>
               <p>Select a note or create a new one</p>
             </div>
             <div class="note-editor-active" id="noteEditorActive" style="display:none">
@@ -535,36 +586,35 @@
     </div>
   </div>
 
-  <!-- BALANCE SETTINGS MODAL -->
+  <!-- BALANCE MODAL -->
   <div class="modal-overlay" id="balanceModal" style="display:none">
-    <div class="modal" style="max-width:360px">
+    <div class="modal" style="max-width:380px">
       <div class="modal-header">
-        <h2>💰 Set Starting Balance</h2>
+        <h2>Set Starting Balance</h2>
         <button class="modal-close" id="balanceModalClose">✕</button>
       </div>
       <div class="modal-body">
-        <p style="color:var(--text2);font-size:13px;margin-bottom:18px;line-height:1.6">
-          Enter your account starting balance. KradeForge will automatically 
-          add or subtract your trade P&L to show your current balance.
+        <p style="color:var(--text2);font-size:13px;margin-bottom:18px;line-height:1.7">
+          Enter your account starting balance. KradeForge will automatically
+          add or subtract your trade P&amp;L to show your current balance.
         </p>
         <div class="form-group" style="margin-bottom:18px">
           <label>Starting Balance (USD)</label>
-          <input type="number" id="startingBalanceInput" 
-            placeholder="e.g. 10000" step="0.01" min="0"
-            style="font-size:18px;font-family:var(--font-mono);font-weight:700;color:#8bb8d4" />
+          <input type="number" id="startingBalanceInput" placeholder="e.g. 10000" step="0.01" min="0"
+            style="font-size:18px;font-family:var(--font-mono);font-weight:700;color:var(--gold2)" />
         </div>
-        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:18px;font-size:12px;color:var(--text2)">
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;font-size:12.5px;color:var(--text2)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px">
             <span>Starting Balance:</span>
-            <span id="bm_starting" style="font-family:var(--font-mono);color:var(--text)">$0.00</span>
+            <span id="bm_starting" style="font-family:var(--font-mono);color:var(--text);font-weight:700">$0.00</span>
           </div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-            <span>Total P&L:</span>
-            <span id="bm_pnl" style="font-family:var(--font-mono)">$0.00</span>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+            <span>Total P&amp;L:</span>
+            <span id="bm_pnl" style="font-family:var(--font-mono);font-weight:700">$0.00</span>
           </div>
-          <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:8px;font-weight:700">
+          <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:10px;font-weight:700;font-size:13.5px">
             <span>Current Balance:</span>
-            <span id="bm_current" style="font-family:var(--font-mono);color:#8bb8d4">$0.00</span>
+            <span id="bm_current" style="font-family:var(--font-mono);color:var(--gold2)">$0.00</span>
           </div>
         </div>
         <button class="btn-primary" id="saveBalanceBtn" style="width:100%">Save Balance</button>
@@ -580,5 +630,25 @@
   <script src="js/charts.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/app.js"></script>
+
+  <!-- Sidebar user info sync -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Sync sidebar user info with topbar
+      const syncUser = () => {
+        const name = document.getElementById('dropdownName')?.textContent || 'Trader';
+        const el = document.getElementById('sidebarUserName');
+        const av = document.getElementById('sidebarUserAvatar');
+        if (el) el.textContent = name;
+        if (av && name !== 'User') av.textContent = name.charAt(0).toUpperCase();
+      };
+      // Poll until app sets user info
+      const t = setInterval(() => {
+        const name = document.getElementById('dropdownName')?.textContent;
+        if (name && name !== 'User') { syncUser(); clearInterval(t); }
+      }, 500);
+      setTimeout(() => clearInterval(t), 10000);
+    });
+  </script>
 </body>
 </html>
