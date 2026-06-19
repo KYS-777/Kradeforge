@@ -195,7 +195,7 @@
           </div>
           <div class="welcome-date" id="welcomeDate"></div>
         </div>
-        <div class="summary-card" id="balancePill" onclick="App.openBalanceModal()" title="Click to set balance">
+        <div class="summary-card" id="balancePill" title="Click to set balance">
           <div class="summary-label">Account Balance</div>
           <div class="summary-value" id="topbarBalance">$0.00</div>
           <div class="summary-sub">
@@ -599,8 +599,8 @@
             <div class="form-group"><label>P&amp;L (auto)</label><input type="text" id="mPnlPreview" placeholder="Auto" readonly style="font-family:var(--font-mono);font-weight:700;cursor:default"/></div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label>Stop Loss</label><input type="number" id="mStop" placeholder="0.000" step="any" oninput="App.calcManualPnl()"/></div>
-            <div class="form-group"><label>Take Profit</label><input type="number" id="mTP" placeholder="0.000" step="any" oninput="App.calcManualPnl()"/></div>
+<div class="form-group"><label>Stop Loss</label><input type="number" id="mStop" placeholder="0.000" step="any" oninput="App.calcManualPnl()"/><span class="field-hint" id="mRiskHint"></span></div>
+<div class="form-group"><label>Take Profit</label><input type="number" id="mTP" placeholder="0.000" step="any" oninput="App.calcManualPnl()"/><span class="field-hint" id="mRewardHint"></span></div>
             <div class="form-group"><label>Commission</label><input type="number" id="mCommission" placeholder="0.00" step="any" oninput="App.calcManualPnl()"/></div>
           </div>
           <div class="form-row">
@@ -610,6 +610,9 @@
           </div>
           <div class="form-row">
             <div class="form-group" style="grid-column:1/-1"><label>Notes / Journal</label><textarea id="mNotes" rows="3" placeholder="Setup, entry reason, lessons learned…"></textarea></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Tags</label><input type="text" id="mTags" placeholder="breakout, scalp, news…"/></div>
           </div>
           <div class="rr-preview" id="rrPreview" style="display:none">
             <span>Risk: <strong id="rrRisk">—</strong></span>
