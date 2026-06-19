@@ -844,3 +844,207 @@ canvas { max-height: 200px; width: 100% !important; }
   font-size: 14px;
   font-weight: 400;
 }
+
+/* ════════════════════════════════════
+   MISSING STYLES — rendered by app.js / ui.js
+════════════════════════════════════ */
+
+/* Empty state in tables */
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text3);
+}
+.empty-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  opacity: 0.3;
+}
+.empty-state p {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Import log lines */
+.log-line { line-height: 1.8; }
+.log-line.success { color: var(--green); }
+.log-line.error   { color: var(--red); }
+.log-line.warn    { color: var(--amber); }
+.log-line.info    { color: var(--blue); }
+
+/* Modal detail grid */
+.modal-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.modal-detail-item {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px 14px;
+}
+.mdi-label {
+  font-size: 9.5px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+.mdi-value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+.modal-notes {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px;
+  margin-top: 14px;
+}
+.modal-notes-label {
+  font-size: 9.5px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+.modal-notes-text {
+  font-size: 13.5px;
+  color: var(--text2);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+/* Modal edit form */
+.modal-edit-form .form-row { margin-bottom: 12px; }
+.modal-edit-form .form-group { margin-bottom: 0; }
+
+/* Calendar day elements */
+.cal-day-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text2);
+  margin-bottom: 5px;
+  font-family: var(--font-mono);
+}
+.cal-day-pnl {
+  font-size: 11.5px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  line-height: 1.2;
+}
+.cal-day-trades {
+  font-size: 9.5px;
+  color: var(--text3);
+  margin-top: 3px;
+}
+.cal-day.empty {
+  background: transparent;
+  border-color: transparent;
+  pointer-events: none;
+}
+
+/* Note list date */
+.note-item-date {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 3px;
+  font-family: var(--font-mono);
+}
+
+/* Field hint */
+.field-hint {
+  font-size: 11px;
+  color: var(--text2);
+  font-family: var(--font-mono);
+  margin-top: 3px;
+  display: block;
+}
+
+/* Screenshot preview show state */
+.screenshot-preview.show { display: block; }
+.ai-processing.show { display: flex; }
+
+/* Toast types */
+.toast.warn { border-color: rgba(245,158,11,0.4); }
+.toast.info { border-color: rgba(76,142,245,0.4); }
+
+/* Balance modal preview */
+.balance-preview {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.bp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text2);
+  padding: 4px 0;
+}
+.bp-total {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  margin-top: 6px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+}
+.bp-val { font-family: var(--font-mono); font-weight: 700; }
+.bp-val.gold { color: var(--gold); }
+
+/* Summary pnl colors */
+.summary-pnl.positive { color: var(--green); }
+.summary-pnl.negative { color: var(--red);   }
+
+/* Topbar summary pnl update */
+#topbarDayPnl.positive { color: var(--green); }
+#topbarDayPnl.negative { color: var(--red);   }
+
+/* Button secondary missing */
+.btn-secondary {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  padding: 8px 14px;
+  border-radius: var(--r);
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.btn-secondary:hover { border-color: var(--border3); color: var(--text); }
+
+/* Modal X button */
+.modal-x {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 16px;
+  width: 30px; height: 30px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.18s;
+  flex-shrink: 0;
+}
+.modal-x:hover {
+  background: var(--red-dim);
+  border-color: rgba(255,77,109,0.4);
+  color: var(--red);
+}
+
+/* Profit/loss calendar classes */
+.cal-day.has-trades.profit { border-color: rgba(0,230,118,0.3); background: rgba(0,230,118,0.025); }
+.cal-day.has-trades.loss   { border-color: rgba(255,77,109,0.3); background: rgba(255,77,109,0.025); }
