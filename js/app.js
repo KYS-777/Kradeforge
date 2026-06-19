@@ -197,7 +197,7 @@ const App = (() => {
     document.getElementById('topbarTitle').textContent = titles[page] || page;
 
     // Close sidebar on mobile
-    document.getElementById('sidebar').classList.remove('open');
+    if (window.innerWidth < 768 && typeof KF !== 'undefined') KF.setSidebar(false);
 
     // Lazy render
     if (page === 'trades') renderTradeLog();
@@ -210,7 +210,7 @@ const App = (() => {
   function bindTopbar() {
     document.getElementById('addTradeBtn')?.addEventListener('click', () => {
       navigateTo('import');
-      document.getElementById('mSymbol').focus();
+      document.getElementById('mSymbol')?.focus();
     });
 
     document.querySelectorAll('.dfilter').forEach(btn => {
@@ -222,20 +222,20 @@ const App = (() => {
       });
     });
 
-    document.getElementById('exportAllBtn').addEventListener('click', exportAll);
+    document.getElementById('exportAllBtn')?.addEventListener('click', exportAll);
 
     // ── Balance pill — click to open settings ────────────
-    document.getElementById('balancePill').addEventListener('click', openBalanceModal);
-    document.getElementById('balanceModalClose').addEventListener('click', closeBalanceModal);
-    document.getElementById('saveBalanceBtn').addEventListener('click', saveStartingBalance);
-    document.getElementById('balanceModal').addEventListener('click', (e) => {
+    // balancePill click handled via HTML onclick attribute
+    document.getElementById('balanceModalClose')?.addEventListener('click', closeBalanceModal);
+    document.getElementById('saveBalanceBtn')?.addEventListener('click', saveStartingBalance);
+    document.getElementById('balanceModal')?.addEventListener('click', (e) => {
       if (e.target === e.currentTarget) closeBalanceModal();
     });
 
     // Live preview as user types
-    document.getElementById('startingBalanceInput').addEventListener('input', updateBalancePreview);
+    document.getElementById('startingBalanceInput')?.addEventListener('input', updateBalancePreview);
 
-    document.getElementById('clearDataBtn').addEventListener('click', async () => {
+    document.getElementById('clearDataBtn')?.addEventListener('click', async () => {
       if (confirm('Clear ALL trade data? This cannot be undone.')) {
         // Delete all data from Supabase cloud database (single bulk call each)
         if (CloudStore.isOnline()) {
@@ -388,19 +388,19 @@ const App = (() => {
 
   // ── TRADE LOG ────────────────────────────────────────────
   function bindTradeLog() {
-    document.getElementById('tradeSearch').addEventListener('input', () => {
+    document.getElementById('tradeSearch')?.addEventListener('input', () => {
       currentPage2 = 1;
       renderTradeLog();
     });
-    document.getElementById('sideFilter').addEventListener('change', () => {
+    document.getElementById('sideFilter')?.addEventListener('change', () => {
       currentPage2 = 1;
       renderTradeLog();
     });
-    document.getElementById('resultFilter').addEventListener('change', () => {
+    document.getElementById('resultFilter')?.addEventListener('change', () => {
       currentPage2 = 1;
       renderTradeLog();
     });
-    document.getElementById('exportCsvBtn').addEventListener('click', exportCSV);
+    document.getElementById('exportCsvBtn')?.addEventListener('click', exportCSV);
 
     document.querySelectorAll('#fullTradesTable th[data-sort]').forEach(th => {
       th.addEventListener('click', () => {
@@ -577,16 +577,17 @@ const App = (() => {
 
   // ── CALENDAR ─────────────────────────────────────────────
   function bindCalendar() {
-    document.getElementById('calPrev').addEventListener('click', () => {
+    document.getElementById('calPrev')?.addEventListener('click', () => {
       calendarDate.setMonth(calendarDate.getMonth() - 1);
       renderCalendar();
     });
-    document.getElementById('calNext').addEventListener('click', () => {
+    document.getElementById('calNext')?.addEventListener('click', () => {
       calendarDate.setMonth(calendarDate.getMonth() + 1);
       renderCalendar();
     });
-    document.getElementById('calDetailClose').addEventListener('click', () => {
-      document.getElementById('calDayDetail').style.display = 'none';
+    document.getElementById('calDetailClose')?.addEventListener('click', () => {
+      const calDetailEl = document.getElementById('calDayDetail');
+    if (calDetailEl) calDetailEl.style.display = 'none';
     });
   }
 
@@ -609,7 +610,7 @@ const App = (() => {
       }
     }
 
-    const firstDay = new Date(year, month, 1).getDay();
+    const firstDay = (new Date(year, month, 1).getDay());
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const today = new Date();
     const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
@@ -630,7 +631,7 @@ const App = (() => {
       if (isToday) cls += ' today';
       if (dayData) {
         cls += ' has-trades';
-        cls += pnl > 0 ? ' profitable' : pnl < 0 ? ' losing' : '';
+        cls += pnl > 0 ? ' profit' : pnl < 0 ? ' loss' : '';
       }
 
       html += `<div class="${cls}" ${dayData ? `onclick="App.showCalDay(${d}, ${year}, ${month})"` : ''}>
@@ -669,13 +670,15 @@ const App = (() => {
           </div>`).join('')}
       </div>`;
 
-    document.getElementById('calDayDetail').style.display = 'block';
+    const calDetail = document.getElementById('calDayDetail');
+    if (calDetail) calDetail.style.display = 'block';
   }
 
   // ── IMPORT ───────────────────────────────────────────────
   function bindImport() {
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
+    if (!dropZone || !fileInput) return;
 
     dropZone.addEventListener('dragover', e => {
       e.preventDefault();
@@ -694,13 +697,13 @@ const App = (() => {
       e.target.value = '';
     });
 
-    document.getElementById('confirmImportBtn').addEventListener('click', confirmImport);
-    document.getElementById('cancelImportBtn').addEventListener('click', () => {
+    document.getElementById('confirmImportBtn')?.addEventListener('click', confirmImport);
+    document.getElementById('cancelImportBtn')?.addEventListener('click', () => {
       document.getElementById('previewSection').style.display = 'none';
       const preview = document.getElementById('screenshotPreview');
       const aiEl    = document.getElementById('aiProcessing');
-      if (preview) preview.classList.remove('show');
-      if (aiEl)    aiEl.classList.remove('show');
+      if (preview) preview.style.display = 'none';
+      if (aiEl)    aiEl.style.display = 'none';
       pendingImport = [];
     });
   }
@@ -726,13 +729,13 @@ const App = (() => {
         const preview = document.getElementById('screenshotPreview');
         const img     = document.getElementById('screenshotImg');
         if (img)     img.src = e.target.result;
-        if (preview) preview.classList.add('show');
+        if (preview) { preview.style.display = 'block'; }
       };
       reader.readAsDataURL(file);
 
       // Show AI processing indicator
       const aiEl = document.getElementById('aiProcessing');
-      if (aiEl) aiEl.classList.add('show');
+      if (aiEl) aiEl.style.display = 'flex';
     }
 
     addLog(isImage ? `🖼 Screenshot: ${file.name}` : `📄 Reading: ${file.name}`);
@@ -744,7 +747,7 @@ const App = (() => {
 
       // Hide AI processing indicator
       const aiEl = document.getElementById('aiProcessing');
-      if (aiEl) aiEl.classList.remove('show');
+      if (aiEl) aiEl.style.display = 'none';
 
       if (!result.trades.length) {
         addLog('⚠ No trades could be parsed from this file.', 'warn');
@@ -806,8 +809,8 @@ const App = (() => {
   // ── MANUAL FORM SETUP ───────────────────────────────────
   // Binds submit, clear buttons and live P&L calculator.
   function bindManualForm() {
-    document.getElementById('submitManualBtn').addEventListener('click', submitManualTrade);
-    document.getElementById('clearManualBtn').addEventListener('click', clearManualForm);
+    document.getElementById('submitManualBtn')?.addEventListener('click', submitManualTrade);
+    document.getElementById('clearManualBtn')?.addEventListener('click', clearManualForm);
   }
 
   // ── LIVE P&L / R:R CALCULATOR ───────────────────────────
@@ -829,7 +832,7 @@ const App = (() => {
     const rrReward = document.getElementById('rrReward');
     const rrRatio  = document.getElementById('rrRatio');
     const riskHint = document.getElementById('mRiskHint');
-    const rewHint  = document.getElementById('mRewardHint');
+    const rewHint  = document.getElementById('mRewardHint') || { textContent: '' };
 
     // ── P&L preview ───────────────────────────────────────
     // Same formula as enrichTrade:
@@ -884,13 +887,13 @@ const App = (() => {
   function clearManualForm() {
     ['mSymbol','mQty','mEntry','mExit','mStop','mTP',
      'mEntryDt','mExitDt','mCommission','mNotes','mTags']
-      .forEach(id => { document.getElementById(id).value = ''; });
+      .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     document.getElementById('mSide').value   = 'LONG';
     document.getElementById('mResult').value = '';
-    document.getElementById('mPnlPreview').value = '';
-    document.getElementById('rrPreview').style.display = 'none';
-    document.getElementById('mRiskHint').textContent  = '';
-    document.getElementById('mRewardHint').textContent = '';
+    const _pp = document.getElementById('mPnlPreview'); if (_pp) _pp.value = '';
+    const _rp = document.getElementById('rrPreview'); if (_rp) _rp.style.display = 'none';
+    const _rh = document.getElementById('mRiskHint'); if (_rh) _rh.textContent = '';
+    const _rwh = document.getElementById('mRewardHint'); if (_rwh) _rwh.textContent = '';
   }
 
   // ── SUBMIT MANUAL TRADE ─────────────────────────────────
@@ -902,7 +905,7 @@ const App = (() => {
     const entry  = parseFloat(document.getElementById('mEntry').value);
     const exit   = parseFloat(document.getElementById('mExit').value);
     const stop   = parseFloat(document.getElementById('mStop').value)  || undefined;
-    const tp     = parseFloat(document.getElementById('mTP').value)    || undefined;
+    const tp     = parseFloat(document.getElementById('mTP')?.value)    || undefined;
     const entryDt    = document.getElementById('mEntryDt').value;
     const exitDt     = document.getElementById('mExitDt').value;
     const commission = parseFloat(document.getElementById('mCommission').value) || 0;
@@ -938,7 +941,7 @@ const App = (() => {
 
   // ── NOTES ────────────────────────────────────────────────
   function bindNotes() {
-    document.getElementById('addNoteBtn').addEventListener('click', () => {
+    document.getElementById('addNoteBtn')?.addEventListener('click', () => {
       activeNoteId = null;
       document.getElementById('noteTitleInput').value = '';
       document.getElementById('noteBodyInput').value = '';
@@ -950,10 +953,10 @@ const App = (() => {
       document.getElementById('noteTitleInput').focus();
     });
 
-    document.getElementById('saveNoteBtn').addEventListener('click', saveNote);
-    document.getElementById('deleteNoteBtn').addEventListener('click', deleteNote);
+    document.getElementById('saveNoteBtn')?.addEventListener('click', saveNote);
+    document.getElementById('deleteNoteBtn')?.addEventListener('click', deleteNote);
 
-    document.getElementById('noteSearch').addEventListener('input', renderNotesList);
+    document.getElementById('noteSearch')?.addEventListener('input', renderNotesList);
   }
 
   function renderNotesList() {
@@ -1032,8 +1035,8 @@ const App = (() => {
 
   // ── MODAL ────────────────────────────────────────────────
   function bindModal() {
-    document.getElementById('modalClose').addEventListener('click', UI.closeModal);
-    document.getElementById('tradeModal').addEventListener('click', e => {
+    document.getElementById('modalClose')?.addEventListener('click', UI.closeModal);
+    document.getElementById('tradeModal')?.addEventListener('click', e => {
       if (e.target === e.currentTarget) UI.closeModal();
     });
     document.addEventListener('keydown', e => {
