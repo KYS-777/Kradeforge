@@ -1,17 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#0C0D0F" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+  <meta name="theme-color" content="#0B0F19"/>
   <title>KradeForge — Advanced Trading Journal</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
-
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="js/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
@@ -21,903 +17,993 @@
 </head>
 <body>
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-      <div class="logo-kradeforge">
-        <!-- KradeForge Mark: Golden Shield + Lightning Strike -->
-        <svg width="40" height="40" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="sg1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%"   stop-color="#FFF0BC"/>
-              <stop offset="40%"  stop-color="#D4A832"/>
-              <stop offset="100%" stop-color="#7A5A0A"/>
-            </linearGradient>
-            <linearGradient id="sg2" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%"   stop-color="#F5E0A0" stop-opacity="0.22"/>
-              <stop offset="100%" stop-color="#C9A84C" stop-opacity="0"/>
-            </linearGradient>
-            <radialGradient id="sgCore" cx="50%" cy="42%" r="50%">
-              <stop offset="0%"   stop-color="#FFE97A" stop-opacity="0.3"/>
-              <stop offset="100%" stop-color="#C9A84C" stop-opacity="0"/>
-            </radialGradient>
-            <filter id="sfGlow" x="-40%" y="-40%" width="180%" height="180%">
-              <feGaussianBlur stdDeviation="2.8" result="b"/>
-              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <filter id="sfSoft" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="1.5" result="b"/>
-              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-          </defs>
-          <path d="M28 3 L51 13 L51 32 Q51 45 28 53 Q5 45 5 32 L5 13 Z" fill="#0D0F14"/>
-          <path d="M28 3 L51 13 L51 32 Q51 45 28 53 Q5 45 5 32 L5 13 Z" fill="none" stroke="url(#sg1)" stroke-width="1.6" opacity="0.75"/>
-          <path d="M28 3 L51 13 L51 32 Q51 45 28 53 Q5 45 5 32 L5 13 Z" fill="url(#sg2)"/>
-          <path d="M28 3 L51 13 L51 32 Q51 45 28 53 Q5 45 5 32 L5 13 Z" fill="url(#sgCore)"/>
-          <path d="M28 9 L46 17 L46 32 Q46 42 28 48 Q10 42 10 32 L10 17 Z" fill="none" stroke="#C9A84C" stroke-width="0.6" opacity="0.18"/>
-          <path d="M22 12 L33 12 L26 28 L32 28 L20 44 L25 29 L19 29 Z" fill="url(#sg1)" filter="url(#sfGlow)"/>
-          <path d="M22 12 L33 12 L26 28 L32 28" fill="none" stroke="#FFF0BC" stroke-width="0.9" opacity="0.55" stroke-linejoin="round"/>
-          <line x1="37" y1="14" x2="41" y2="10" stroke="#F5E0A0" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
-          <line x1="39" y1="17" x2="44" y2="15" stroke="#C9A84C" stroke-width="1"   stroke-linecap="round" opacity="0.5"/>
-          <line x1="38" y1="21" x2="44" y2="21" stroke="#C9A84C" stroke-width="0.8" stroke-linecap="round" opacity="0.3"/>
-          <line x1="16" y1="37" x2="12" y2="41" stroke="#C9A84C" stroke-width="1"   stroke-linecap="round" opacity="0.4"/>
-          <line x1="14" y1="33" x2="10" y2="34" stroke="#C9A84C" stroke-width="0.8" stroke-linecap="round" opacity="0.3"/>
-          <circle cx="28" cy="5"  r="2.2" fill="#FFF0BC" opacity="0.9" filter="url(#sfSoft)"/>
-          <circle cx="28" cy="5"  r="1"   fill="#ffffff"  opacity="0.8"/>
-          <circle cx="28" cy="51" r="2.5" fill="#C9A84C" opacity="0.45" filter="url(#sfSoft)"/>
-          <circle cx="28" cy="51" r="1.2" fill="#E8C76A" opacity="0.7"/>
-        </svg>
-        <div class="logo-text-block">
-          <span class="logo-name">Krade<span>Forge</span></span>
-          <span class="logo-tagline">Build · Review · Improve</span>
-        </div>
+<!-- ════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <a href="#" class="logo-link" data-page="dashboard">
+      <svg width="34" height="34" viewBox="0 0 56 56" fill="none">
+        <defs>
+          <linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FFF0BC"/>
+            <stop offset="40%" stop-color="#D4AF37"/>
+            <stop offset="100%" stop-color="#7A5A0A"/>
+          </linearGradient>
+          <linearGradient id="lg2" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#F5E0A0" stop-opacity="0.2"/>
+            <stop offset="100%" stop-color="#D4AF37" stop-opacity="0"/>
+          </linearGradient>
+          <filter id="lglow"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <path d="M28 3 L51 13 L51 32 Q51 45 28 53 Q5 45 5 32 L5 13 Z" fill="#0D0F18"/>
+        <path d="M28 3 L51 13 L51 32 Q51 45 28 53 Q5 45 5 32 L5 13 Z" fill="none" stroke="url(#lg1)" stroke-width="1.5" opacity="0.8"/>
+        <path d="M28 3 L51 13 L51 32 Q51 45 28 53 Q5 45 5 32 L5 13 Z" fill="url(#lg2)"/>
+        <path d="M22 12 L33 12 L26 28 L32 28 L20 44 L25 29 L19 29 Z" fill="url(#lg1)" filter="url(#lglow)"/>
+        <line x1="37" y1="14" x2="41" y2="10" stroke="#F5E0A0" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>
+        <line x1="39" y1="17" x2="44" y2="15" stroke="#D4AF37" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+        <circle cx="28" cy="5" r="2" fill="#FFF0BC" opacity="0.9"/>
+        <circle cx="28" cy="51" r="1.5" fill="#D4AF37" opacity="0.6"/>
+      </svg>
+      <div class="logo-text" data-full>
+        <span class="logo-name">Krade<span>Forge</span></span>
+        <span class="logo-sub">Build · Review · Improve</span>
       </div>
+    </a>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-group">
+      <div class="nav-group-label" data-full>Main</div>
+      <a href="#" class="nav-item active" data-page="dashboard" title="Dashboard">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </span>
+        <span class="nav-label" data-full>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" data-page="trades" title="Trade Log">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+        </span>
+        <span class="nav-label" data-full>Trade Log</span>
+      </a>
+      <a href="#" class="nav-item" data-page="analytics" title="Analytics">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+        </span>
+        <span class="nav-label" data-full>Analytics</span>
+      </a>
+      <a href="#" class="nav-item" data-page="calendar" title="Calendar">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </span>
+        <span class="nav-label" data-full>Calendar</span>
+      </a>
     </div>
 
-    <nav class="sidebar-nav">
-      <span class="nav-section-label">Main</span>
-      <a href="#" class="nav-item active" data-page="dashboard">
+    <div class="nav-group">
+      <div class="nav-group-label" data-full>Tools</div>
+      <a href="#" class="nav-item" data-page="import" title="Import Trades">
         <span class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         </span>
-        <span>Dashboard</span>
+        <span class="nav-label" data-full>Import Trades</span>
       </a>
-      <a href="#" class="nav-item" data-page="trades">
+      <a href="#" class="nav-item" data-page="notes" title="Journal Notes">
         <span class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         </span>
-        <span>Trade Log</span>
+        <span class="nav-label" data-full>Journal Notes</span>
       </a>
-      <a href="#" class="nav-item" data-page="analytics">
-        <span class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        </span>
-        <span>Analytics</span>
-      </a>
-      <a href="#" class="nav-item" data-page="calendar">
-        <span class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        </span>
-        <span>Calendar</span>
-      </a>
-
-      <span class="nav-section-label">Tools</span>
-      <a href="#" class="nav-item" data-page="import">
-        <span class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        </span>
-        <span>Import</span>
-      </a>
-      <a href="#" class="nav-item" data-page="notes">
-        <span class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        </span>
-        <span>Journal Notes</span>
-      </a>
-    </nav>
-
-    <div class="sidebar-footer">
-      <div class="sidebar-user" id="sidebarUser">
-        <div class="sidebar-user-avatar" id="sidebarUserAvatar">?</div>
-        <div class="sidebar-user-info">
-          <div class="sidebar-user-name" id="sidebarUserName">Loading…</div>
-          <div class="sidebar-user-role">Trader</div>
-        </div>
-      </div>
-      <button class="btn-export-all" id="exportAllBtn">↓ Export Data</button>
-      <button class="btn-clear" id="clearDataBtn">✕ Clear All Data</button>
     </div>
-  </aside>
 
-  <!-- Sidebar overlay (mobile) -->
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="nav-group nav-group-bottom">
+      <div class="nav-group-label" data-full>Account</div>
+      <a href="#" class="nav-item" id="sidebarSettingsBtn" title="Settings">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </span>
+        <span class="nav-label" data-full>Settings</span>
+      </a>
+    </div>
+  </nav>
 
-  <!-- MAIN CONTENT -->
-  <main class="main-content">
+  <div class="sidebar-user-card" data-full>
+    <div class="suc-avatar" id="sidebarUserAvatar">K</div>
+    <div class="suc-info">
+      <div class="suc-name" id="sidebarUserName">Trader</div>
+      <div class="suc-role">Pro Account</div>
+    </div>
+    <button class="suc-signout" onclick="App.signOut()" title="Sign out">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </div>
+</aside>
 
-    <!-- TOPBAR -->
-    <header class="topbar">
-      <button class="menu-toggle" id="menuToggle">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ════════════════════════════════════
+     MAIN
+════════════════════════════════════ -->
+<div class="main-wrap" id="mainWrap">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" id="hamburger" aria-label="Toggle sidebar">
+        <span></span><span></span><span></span>
       </button>
-      <div class="topbar-title" id="topbarTitle">Dashboard</div>
-      <div class="topbar-right">
-        <!-- Theme toggle -->
-        <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">
-          <span class="theme-icon-dark">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          </span>
-          <span class="theme-icon-light" style="display:none">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-          </span>
-        </button>
-        <!-- Settings -->
-        <button class="topbar-icon-btn" id="settingsBtn" title="Settings">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </button>
-        <!-- Notification bell -->
-        <button class="topbar-icon-btn" id="notifBtn" title="Notifications">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        </button>
-        <div class="topbar-divider"></div>
-        <div class="account-balance-pill" id="balancePill" title="Click to set starting balance">
-          <div class="pill-inner">
-            <div class="pill-row">
-              <span class="pill-label">Balance</span>
-              <span class="pill-currency">USD</span>
-            </div>
-            <span class="pill-value" id="topbarBalance">$0.00</span>
-            <div class="pill-row">
-              <span class="pill-pnl-label">P&amp;L:</span>
-              <span class="pill-pnl" id="topbarDayPnl">$0.00</span>
-            </div>
-          </div>
-        </div>
-        <button class="add-trade-btn" id="addTradeBtn">+ Add Trade</button>
-        <div class="user-menu" id="userMenu">
-          <button class="user-avatar" id="userAvatarBtn"><span id="userInitial">?</span></button>
-          <div class="user-dropdown" id="userDropdown" style="display:none">
-            <div class="user-info">
-              <div class="user-name" id="dropdownName">User</div>
-              <div class="user-email" id="dropdownEmail">—</div>
-            </div>
-            <div class="user-dropdown-divider"></div>
-            <button class="user-dropdown-item" onclick="App.openBalanceModal()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-              Set Balance
-            </button>
-            <button class="user-dropdown-item danger" onclick="App.signOut()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-              Sign Out
-            </button>
-          </div>
-        </div>
+      <div class="topbar-breadcrumb">
+        <span class="topbar-dot"></span>
+        <span id="topbarTitle">Dashboard</span>
       </div>
-    </header>
-
-    <!-- SETTINGS PANEL -->
-    <div class="settings-panel" id="settingsPanel">
-      <div class="settings-overlay" id="settingsOverlay"></div>
-      <div class="settings-drawer">
-        <div class="settings-head">
-          <div class="settings-head-title">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            Settings
+    </div>
+    <div class="topbar-right">
+      <!-- Theme -->
+      <button class="tb-icon-btn" id="themeToggle" title="Toggle theme">
+        <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+      </button>
+      <!-- Notif -->
+      <button class="tb-icon-btn" id="notifBtn" title="Notifications">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <!-- Add Trade -->
+      <button class="btn-add-trade" id="addTradeBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Trade
+      </button>
+      <!-- Avatar -->
+      <div class="user-menu" id="userMenu">
+        <button class="user-avatar" id="userAvatarBtn"><span id="userInitial">?</span></button>
+        <div class="user-dropdown" id="userDropdown" style="display:none">
+          <div class="ud-head">
+            <div class="ud-name" id="dropdownName">Trader</div>
+            <div class="ud-email" id="dropdownEmail">—</div>
           </div>
-          <button class="settings-close" id="settingsClose">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <div class="ud-divider"></div>
+          <button class="ud-item" onclick="App.openBalanceModal()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Set Balance
+          </button>
+          <button class="ud-item" onclick="KF.openSettings()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33"/></svg>
+            Settings
+          </button>
+          <div class="ud-divider"></div>
+          <button class="ud-item danger" onclick="App.signOut()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign Out
           </button>
         </div>
-        <div class="settings-body">
-
-          <!-- Appearance -->
-          <div class="settings-section">
-            <div class="settings-section-label">Appearance</div>
-
-            <div class="settings-row">
-              <div class="settings-row-info">
-                <div class="settings-row-title">Theme</div>
-                <div class="settings-row-sub">Switch between dark and light mode</div>
-              </div>
-              <div class="theme-switcher">
-                <button class="theme-opt active" data-theme="dark">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                  Dark
-                </button>
-                <button class="theme-opt" data-theme="light">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
-                  Light
-                </button>
-              </div>
-            </div>
-
-            <div class="settings-row">
-              <div class="settings-row-info">
-                <div class="settings-row-title">Accent Color</div>
-                <div class="settings-row-sub">Choose your brand color</div>
-              </div>
-              <div class="accent-swatches">
-                <button class="swatch active" data-accent="gold"   style="background:#C9A84C" title="Gold"></button>
-                <button class="swatch"        data-accent="blue"   style="background:#5B8EFF" title="Blue"></button>
-                <button class="swatch"        data-accent="green"  style="background:#00D68F" title="Green"></button>
-                <button class="swatch"        data-accent="purple" style="background:#A78BFA" title="Purple"></button>
-                <button class="swatch"        data-accent="rose"   style="background:#FF4F6E" title="Rose"></button>
-              </div>
-            </div>
-
-            <div class="settings-row">
-              <div class="settings-row-info">
-                <div class="settings-row-title">Compact Mode</div>
-                <div class="settings-row-sub">Tighter spacing for more data</div>
-              </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="compactToggle"/>
-                <span class="toggle-track"><span class="toggle-thumb"></span></span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Trading -->
-          <div class="settings-section">
-            <div class="settings-section-label">Trading Preferences</div>
-
-            <div class="settings-row">
-              <div class="settings-row-info">
-                <div class="settings-row-title">Default Currency</div>
-                <div class="settings-row-sub">Display currency for P&amp;L</div>
-              </div>
-              <select class="settings-select" id="currencySelect">
-                <option value="USD">USD $</option>
-                <option value="EUR">EUR €</option>
-                <option value="GBP">GBP £</option>
-                <option value="ETB">ETB Br</option>
-              </select>
-            </div>
-
-            <div class="settings-row">
-              <div class="settings-row-info">
-                <div class="settings-row-title">Trades Per Page</div>
-                <div class="settings-row-sub">Rows shown in trade log</div>
-              </div>
-              <select class="settings-select" id="perPageSelect">
-                <option value="25">25</option>
-                <option value="50" selected>50</option>
-                <option value="100">100</option>
-              </select>
-            </div>
-
-            <div class="settings-row">
-              <div class="settings-row-info">
-                <div class="settings-row-title">Show Commissions</div>
-                <div class="settings-row-sub">Include swap/commission in P&amp;L</div>
-              </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="commissionToggle" checked/>
-                <span class="toggle-track"><span class="toggle-thumb"></span></span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Account -->
-          <div class="settings-section">
-            <div class="settings-section-label">Account</div>
-            <div class="settings-row">
-              <div class="settings-row-info">
-                <div class="settings-row-title">Starting Balance</div>
-                <div class="settings-row-sub">Your account base capital</div>
-              </div>
-              <button class="settings-btn-sm" onclick="App.openBalanceModal(); KF.closeSettings()">Edit</button>
-            </div>
-            <div class="settings-row">
-              <div class="settings-row-info">
-                <div class="settings-row-title">Export All Data</div>
-                <div class="settings-row-sub">Download trades as CSV</div>
-              </div>
-              <button class="settings-btn-sm" onclick="document.getElementById('exportAllBtn').click(); KF.closeSettings()">Export</button>
-            </div>
-            <div class="settings-row">
-              <div class="settings-row-info">
-                <div class="settings-row-title">Clear All Data</div>
-                <div class="settings-row-sub" style="color:var(--red)">Permanently delete all trades</div>
-              </div>
-              <button class="settings-btn-sm danger" onclick="document.getElementById('clearDataBtn').click(); KF.closeSettings()">Clear</button>
-            </div>
-          </div>
-
-          <!-- About -->
-          <div class="settings-section">
-            <div class="settings-section-label">About</div>
-            <div class="settings-about">
-              <div class="settings-about-logo">
-                <svg width="28" height="28" viewBox="0 0 56 56" fill="none"><defs><linearGradient id="abg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FFF0BC"/><stop offset="40%" stop-color="#D4A832"/><stop offset="100%" stop-color="#7A5A0A"/></linearGradient></defs><path d="M28 3 L51 13 L51 32 Q51 45 28 53 Q5 45 5 32 L5 13 Z" fill="#0D0F14"/><path d="M28 3 L51 13 L51 32 Q51 45 28 53 Q5 45 5 32 L5 13 Z" fill="none" stroke="url(#abg1)" stroke-width="1.6" opacity="0.75"/><path d="M22 12 L33 12 L26 28 L32 28 L20 44 L25 29 L19 29 Z" fill="url(#abg1)"/></svg>
-              </div>
-              <div>
-                <div class="settings-about-name">KradeForge</div>
-                <div class="settings-about-ver">Version 2.0 · Advanced Trading Journal</div>
-              </div>
-            </div>
-            <div class="settings-row">
-              <div class="settings-row-info">
-                <div class="settings-row-title">Sign Out</div>
-                <div class="settings-row-sub">Log out of your account</div>
-              </div>
-              <button class="settings-btn-sm danger" onclick="App.signOut()">Sign Out</button>
-            </div>
-          </div>
-
-        </div>
       </div>
     </div>
+  </header>
 
-    <!-- PAGES -->
-    <div class="pages-container">
+  <!-- PAGES -->
+  <div class="pages-container">
 
-      <!-- DASHBOARD -->
-      <section class="page active" id="page-dashboard">
-        <div class="page-header">
-          <h1>Overview</h1>
-          <div class="date-filter">
-            <button class="dfilter active" data-range="all">All</button>
-            <button class="dfilter" data-range="7">7D</button>
-            <button class="dfilter" data-range="30">30D</button>
-            <button class="dfilter" data-range="90">90D</button>
-            <button class="dfilter" data-range="ytd">YTD</button>
+    <!-- ══ DASHBOARD ══ -->
+    <section class="page active" id="page-dashboard">
+
+      <!-- Welcome Row -->
+      <div class="welcome-row">
+        <div class="welcome-card">
+          <div class="welcome-text">
+            <div class="welcome-greeting" id="welcomeGreeting">Good morning, Trader 👋</div>
+            <div class="welcome-sub">Track performance, review mistakes, and improve your edge.</div>
+          </div>
+          <div class="welcome-date" id="welcomeDate"></div>
+        </div>
+        <div class="summary-card" id="balancePill" onclick="App.openBalanceModal()" title="Click to set balance">
+          <div class="summary-label">Account Balance</div>
+          <div class="summary-value" id="topbarBalance">$0.00</div>
+          <div class="summary-sub">
+            <span class="summary-badge" id="pill-currency-badge">USD</span>
+            <span class="summary-pnl" id="topbarDayPnl">P&L: $0.00</span>
           </div>
         </div>
-
-        <div class="stats-grid" id="statsGrid">
-          <div class="stat-card accent">
-            <div class="stat-label">Net P&amp;L</div>
-            <div class="stat-value" id="statNetPnl">$0.00</div>
-            <div class="stat-sub" id="statNetPnlPct">0.00%</div>
+        <div class="score-card">
+          <div class="score-ring-wrap">
+            <svg width="64" height="64" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="6"/>
+              <circle id="scoreRing" cx="32" cy="32" r="26" fill="none" stroke="#D4AF37" stroke-width="6"
+                stroke-linecap="round" stroke-dasharray="163.36" stroke-dashoffset="163.36"
+                transform="rotate(-90 32 32)" style="transition:stroke-dashoffset 1s ease"/>
+            </svg>
+            <div class="score-val" id="scoreVal">–</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">Win Rate</div>
-            <div class="stat-value" id="statWinRate">0%</div>
-            <div class="stat-sub" id="statWinsLosses">0W / 0L</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Profit Factor</div>
-            <div class="stat-value" id="statProfitFactor">0.00</div>
-            <div class="stat-sub">Gross W / Gross L</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Avg Win</div>
-            <div class="stat-value green" id="statAvgWin">$0.00</div>
-            <div class="stat-sub" id="statAvgWinR">0.00R</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Avg Loss</div>
-            <div class="stat-value red" id="statAvgLoss">$0.00</div>
-            <div class="stat-sub" id="statAvgLossR">0.00R</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Total Trades</div>
-            <div class="stat-value" id="statTotalTrades">0</div>
-            <div class="stat-sub" id="statAvgDuration">Avg: 0 min</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Largest Win</div>
-            <div class="stat-value green" id="statBestTrade">$0.00</div>
-            <div class="stat-sub" id="statBestSym">—</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Largest Loss</div>
-            <div class="stat-value red" id="statWorstTrade">$0.00</div>
-            <div class="stat-sub" id="statWorstSym">—</div>
+          <div class="score-info">
+            <div class="score-title">Performance Score</div>
+            <div class="score-desc" id="scoreDesc">Add trades to unlock</div>
           </div>
         </div>
+      </div>
 
-        <div class="charts-row">
-          <div class="chart-card">
-            <div class="chart-title"><span class="chart-title-dot"></span>Cumulative P&amp;L</div>
-            <canvas id="cumulativePnlChart"></canvas>
+      <!-- Date Filter -->
+      <div class="section-toolbar">
+        <div class="section-title-bar">
+          <span class="section-dot"></span>
+          <span>Key Metrics</span>
+        </div>
+        <div class="date-filter">
+          <button class="dfilter active" data-range="all">All</button>
+          <button class="dfilter" data-range="7">7D</button>
+          <button class="dfilter" data-range="30">30D</button>
+          <button class="dfilter" data-range="90">90D</button>
+          <button class="dfilter" data-range="ytd">YTD</button>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid" id="statsGrid">
+        <div class="kpi-card kpi-accent">
+          <div class="kpi-icon kpi-icon-gold">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           </div>
-          <div class="chart-card">
-            <div class="chart-title"><span class="chart-title-dot"></span>Win / Loss Distribution</div>
-            <canvas id="winLossChart"></canvas>
+          <div class="kpi-label">Net P&amp;L</div>
+          <div class="kpi-value" id="statNetPnl">$0.00</div>
+          <div class="kpi-sub" id="statNetPnlPct">0.00% return</div>
+          <div class="kpi-trend" id="kpiTrendPnl"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-blue">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="kpi-label">Win Rate</div>
+          <div class="kpi-value" id="statWinRate">0%</div>
+          <div class="kpi-sub" id="statWinsLosses">0W / 0L</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-purple">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          </div>
+          <div class="kpi-label">Profit Factor</div>
+          <div class="kpi-value" id="statProfitFactor">0.00</div>
+          <div class="kpi-sub">Gross W / Gross L</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-green">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          </div>
+          <div class="kpi-label">Avg Win</div>
+          <div class="kpi-value green" id="statAvgWin">$0.00</div>
+          <div class="kpi-sub" id="statAvgWinR">0.00R avg</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-red">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+          </div>
+          <div class="kpi-label">Avg Loss</div>
+          <div class="kpi-value red" id="statAvgLoss">$0.00</div>
+          <div class="kpi-sub" id="statAvgLossR">0.00R avg</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-amber">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="kpi-label">Total Trades</div>
+          <div class="kpi-value" id="statTotalTrades">0</div>
+          <div class="kpi-sub" id="statAvgDuration">Avg: 0 min</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-green">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
+          </div>
+          <div class="kpi-label">Largest Win</div>
+          <div class="kpi-value green" id="statBestTrade">$0.00</div>
+          <div class="kpi-sub" id="statBestSym">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-red">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="17 6 12 11 7 6"/><polyline points="17 13 12 18 7 13"/></svg>
+          </div>
+          <div class="kpi-label">Largest Loss</div>
+          <div class="kpi-value red" id="statWorstTrade">$0.00</div>
+          <div class="kpi-sub" id="statWorstSym">—</div>
+        </div>
+      </div>
+
+      <!-- Streak + Risk Widgets -->
+      <div class="widget-row">
+        <div class="widget-card" id="streakWidget">
+          <div class="widget-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            Trading Streak
+          </div>
+          <div class="streak-body">
+            <div class="streak-item" id="winStreakItem">
+              <div class="streak-emoji">🔥</div>
+              <div class="streak-info">
+                <div class="streak-val" id="winStreakVal">0</div>
+                <div class="streak-lbl">Win Streak</div>
+              </div>
+            </div>
+            <div class="streak-sep"></div>
+            <div class="streak-item" id="lossStreakItem">
+              <div class="streak-emoji">❄️</div>
+              <div class="streak-info">
+                <div class="streak-val" id="lossStreakVal">0</div>
+                <div class="streak-lbl">Loss Streak</div>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div class="charts-row three">
-          <div class="chart-card">
-            <div class="chart-title"><span class="chart-title-dot"></span>P&amp;L by Symbol</div>
-            <canvas id="symbolPnlChart"></canvas>
+        <div class="widget-card" id="riskWidget">
+          <div class="widget-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Risk Management
           </div>
-          <div class="chart-card">
-            <div class="chart-title"><span class="chart-title-dot"></span>Trade Distribution by Day</div>
-            <canvas id="dayDistChart"></canvas>
-          </div>
-          <div class="chart-card">
-            <div class="chart-title"><span class="chart-title-dot"></span>P&amp;L by Hour</div>
-            <canvas id="hourPnlChart"></canvas>
-          </div>
-        </div>
-
-        <div class="recent-section">
-          <div class="section-header">
-            <h2>Recent Trades</h2>
-            <a href="#" class="view-all-link" data-page="trades">View All →</a>
-          </div>
-          <div class="trades-table-wrap">
-            <table class="trades-table" id="recentTradesTable">
-              <thead>
-                <tr>
-                  <th>Date</th><th>Symbol</th><th>Side</th><th>Qty</th>
-                  <th>Entry</th><th>Exit</th><th>P&amp;L</th><th>R</th><th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="recentTradesTbody"></tbody>
-            </table>
+          <div class="risk-grid">
+            <div class="risk-item">
+              <div class="risk-label">Avg R:R</div>
+              <div class="risk-val" id="riskRR">0.00</div>
+            </div>
+            <div class="risk-item">
+              <div class="risk-label">Max DD</div>
+              <div class="risk-val red" id="riskDD">$0.00</div>
+            </div>
+            <div class="risk-item">
+              <div class="risk-label">Avg Risk</div>
+              <div class="risk-val" id="riskAvg">$0.00</div>
+            </div>
+            <div class="risk-item">
+              <div class="risk-label">Expectancy</div>
+              <div class="risk-val" id="riskExp">$0.00</div>
+            </div>
           </div>
         </div>
-      </section>
-
-      <!-- TRADE LOG -->
-      <section class="page" id="page-trades">
-        <div class="page-header">
-          <h1>Trade Log</h1>
-          <div class="log-controls">
-            <input type="text" class="search-input" id="tradeSearch" placeholder="Search symbol, notes…" />
-            <select class="filter-select" id="sideFilter">
-              <option value="">All Sides</option>
-              <option value="LONG">Long</option>
-              <option value="SHORT">Short</option>
-            </select>
-            <select class="filter-select" id="resultFilter">
-              <option value="">All Results</option>
-              <option value="WIN">Wins</option>
-              <option value="LOSS">Losses</option>
-              <option value="EVEN">Breakeven</option>
-            </select>
-            <button class="btn-secondary" id="exportCsvBtn">↓ CSV</button>
+        <div class="widget-card" id="goalWidget">
+          <div class="widget-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            Monthly Goal
+          </div>
+          <div class="goal-body">
+            <div class="goal-values">
+              <span class="goal-current" id="goalCurrent">$0</span>
+              <span class="goal-sep">/</span>
+              <span class="goal-target" id="goalTarget">$1,000</span>
+            </div>
+            <div class="goal-bar-wrap">
+              <div class="goal-bar-track">
+                <div class="goal-bar-fill" id="goalBarFill" style="width:0%"></div>
+              </div>
+              <span class="goal-pct" id="goalPct">0%</span>
+            </div>
+            <div class="goal-desc" id="goalDesc">Set a goal to track progress</div>
+            <button class="goal-set-btn" id="goalSetBtn">Set Goal</button>
           </div>
         </div>
-        <div class="trades-table-wrap full">
-          <table class="trades-table" id="fullTradesTable">
+      </div>
+
+      <!-- Charts Row 1 -->
+      <div class="charts-row charts-row-main">
+        <div class="chart-card chart-large">
+          <div class="chart-head">
+            <div class="chart-title">
+              <span class="chart-dot"></span>Equity Curve
+            </div>
+          </div>
+          <canvas id="cumulativePnlChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-head">
+            <div class="chart-title"><span class="chart-dot"></span>Win / Loss</div>
+          </div>
+          <canvas id="winLossChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Charts Row 2 -->
+      <div class="charts-row charts-row-3">
+        <div class="chart-card">
+          <div class="chart-head"><div class="chart-title"><span class="chart-dot"></span>P&amp;L by Symbol</div></div>
+          <canvas id="symbolPnlChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-head"><div class="chart-title"><span class="chart-dot"></span>By Day of Week</div></div>
+          <canvas id="dayDistChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-head"><div class="chart-title"><span class="chart-dot"></span>P&amp;L by Hour</div></div>
+          <canvas id="hourPnlChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Recent Trades -->
+      <div class="section-block">
+        <div class="section-toolbar">
+          <div class="section-title-bar"><span class="section-dot"></span><span>Recent Trades</span></div>
+          <a href="#" class="link-view-all" data-page="trades">View All →</a>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="recentTradesTable">
             <thead>
               <tr>
-                <th data-sort="date">Date / Time ↕</th>
-                <th data-sort="symbol">Symbol ↕</th>
-                <th>Side</th>
-                <th data-sort="qty">Qty ↕</th>
-                <th data-sort="entry">Entry ↕</th>
-                <th data-sort="exit">Exit ↕</th>
-                <th data-sort="pnl">P&amp;L ↕</th>
-                <th data-sort="r">R ↕</th>
-                <th>Duration</th>
-                <th>Notes</th>
-                <th>Actions</th>
+                <th>Date</th><th>Symbol</th><th>Side</th><th>Qty</th>
+                <th>Entry</th><th>Exit</th><th>P&amp;L</th><th>R</th><th>Result</th>
               </tr>
             </thead>
-            <tbody id="fullTradesTbody"></tbody>
+            <tbody id="recentTradesTbody"></tbody>
           </table>
         </div>
-        <div class="pagination" id="pagination"></div>
-      </section>
-
-      <!-- ANALYTICS -->
-      <section class="page" id="page-analytics">
-        <div class="page-header"><h1>Analytics</h1></div>
-        <div class="analytics-grid">
-          <div class="chart-card tall">
-            <div class="chart-title"><span class="chart-title-dot"></span>Monthly P&amp;L Breakdown</div>
-            <canvas id="monthlyPnlChart"></canvas>
-          </div>
-          <div class="chart-card tall">
-            <div class="chart-title"><span class="chart-title-dot"></span>R-Multiple Distribution</div>
-            <canvas id="rMultipleChart"></canvas>
-          </div>
-          <div class="chart-card tall">
-            <div class="chart-title"><span class="chart-title-dot"></span>Drawdown Curve</div>
-            <canvas id="drawdownChart"></canvas>
-          </div>
-          <div class="chart-card tall">
-            <div class="chart-title"><span class="chart-title-dot"></span>Win Rate by Symbol (Top 10)</div>
-            <canvas id="symbolWinRateChart"></canvas>
-          </div>
-          <div class="chart-card tall">
-            <div class="chart-title"><span class="chart-title-dot"></span>Trade Duration vs P&amp;L</div>
-            <canvas id="durationScatterChart"></canvas>
-          </div>
-          <div class="chart-card tall">
-            <div class="chart-title"><span class="chart-title-dot"></span>Consecutive Wins &amp; Losses</div>
-            <canvas id="streakChart"></canvas>
-          </div>
-        </div>
-        <div class="advanced-stats" id="advancedStats">
-          <h2>Advanced Metrics</h2>
-          <div class="metrics-grid" id="metricsGrid"></div>
-        </div>
-      </section>
-
-      <!-- CALENDAR -->
-      <section class="page" id="page-calendar">
-        <div class="page-header">
-          <h1>Trade Calendar</h1>
-          <div class="cal-nav">
-            <button id="calPrev">‹</button>
-            <span id="calMonthLabel">Month Year</span>
-            <button id="calNext">›</button>
-          </div>
-        </div>
-        <div class="calendar-grid" id="calendarGrid"></div>
-        <div class="cal-day-detail" id="calDayDetail" style="display:none">
-          <div class="cal-detail-header">
-            <span id="calDetailDate"></span>
-            <button id="calDetailClose">✕</button>
-          </div>
-          <div id="calDetailContent"></div>
-        </div>
-      </section>
-
-      <!-- IMPORT -->
-      <section class="page" id="page-import">
-        <div class="page-header"><h1>Import Trades</h1></div>
-        <div class="import-hero">
-          <div class="drop-zone" id="dropZone">
-            <span class="drop-icon">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            </span>
-            <div class="drop-title">Drop file or screenshot here</div>
-            <div class="drop-sub">CSV, XLSX, XLS or Screenshot — auto-detects format</div>
-            <div class="drop-formats">
-              <span class="fmt-highlight">Exness MT5</span>
-              <span class="fmt-highlight">Exness MT4</span>
-              <span class="fmt-highlight">MetaTrader 4</span>
-              <span class="fmt-highlight">MetaTrader 5</span>
-              <span>OANDA</span>
-              <span>Plus500</span>
-              <span>eToro</span>
-              <span>Capital.com</span>
-              <span>Deriv / Binary</span>
-              <span>Binance</span>
-              <span>Bybit</span>
-              <span>Generic CSV</span>
-            </div>
-            <label class="btn-browse">
-              📂 Browse File or Screenshot
-              <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.txt,.png,.jpg,.jpeg,.webp" hidden />
-            </label>
-            <div class="screenshot-preview" id="screenshotPreview">
-              <img id="screenshotImg" src="" alt="Screenshot preview" />
-              <div class="screenshot-preview-label">🤖 AI Reading…</div>
-            </div>
-            <div class="ai-processing" id="aiProcessing">
-              <div class="ai-spinner"></div>
-              <span>AI is reading your screenshot and extracting trades…</span>
-            </div>
-            <div class="drop-screenshot-tip">
-              📸 <span><strong>New!</strong> Drop a screenshot of your trade history — AI will automatically read and import all trades</span>
-            </div>
-          </div>
-          <div class="import-log" id="importLog">
-            <div class="import-log-title">Import Log</div>
-            <div class="import-log-body" id="importLogBody">
-              <p class="log-hint">Import activity will appear here…</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="preview-section" id="previewSection" style="display:none">
-          <div class="preview-header">
-            <span id="previewInfo"></span>
-            <div style="display:flex;gap:8px">
-              <button class="btn-secondary" id="cancelImportBtn">Cancel</button>
-              <button class="btn-primary" id="confirmImportBtn">Import Trades</button>
-            </div>
-          </div>
-          <div class="trades-table-wrap">
-            <table class="trades-table" id="previewTable">
-              <thead><tr id="previewThead"></tr></thead>
-              <tbody id="previewTbody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Manual Add Form -->
-        <div class="manual-section">
-          <h2>Or Add Manually</h2>
-          <div class="manual-form" id="manualForm">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Symbol <span class="req">*</span></label>
-                <input type="text" id="mSymbol" placeholder="XAU/USD, AAPL, BTC/USD…" autocomplete="off" />
-              </div>
-              <div class="form-group">
-                <label>Side <span class="req">*</span></label>
-                <select id="mSide">
-                  <option value="LONG">📈 Long (Buy)</option>
-                  <option value="SHORT">📉 Short (Sell)</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Qty / Lots <span class="req">*</span></label>
-                <input type="number" id="mQty" placeholder="0.01" min="0" step="any" />
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Entry Price <span class="req">*</span></label>
-                <input type="number" id="mEntry" placeholder="0.000" step="any" oninput="App.calcManualPnl()" />
-              </div>
-              <div class="form-group">
-                <label>Exit Price</label>
-                <input type="number" id="mExit" placeholder="0.000" step="any" oninput="App.calcManualPnl()" />
-              </div>
-              <div class="form-group">
-                <label>P&amp;L (auto)</label>
-                <input type="text" id="mPnlPreview" placeholder="Fills automatically" readonly style="cursor:default;background:var(--bg4);font-family:var(--font-mono);font-weight:700" />
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>🛑 Stop Loss</label>
-                <input type="number" id="mStop" placeholder="0.000" step="any" style="border-color:rgba(255,79,110,0.35)" oninput="App.calcManualPnl()" />
-                <span class="field-hint" id="mRiskHint"></span>
-              </div>
-              <div class="form-group">
-                <label>🎯 Take Profit</label>
-                <input type="number" id="mTP" placeholder="0.000" step="any" style="border-color:rgba(0,214,143,0.35)" oninput="App.calcManualPnl()" />
-                <span class="field-hint" id="mRewardHint"></span>
-              </div>
-              <div class="form-group">
-                <label>Commission / Swap</label>
-                <input type="number" id="mCommission" placeholder="0.00" step="any" oninput="App.calcManualPnl()" />
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Entry Date &amp; Time <span class="req">*</span></label>
-                <input type="datetime-local" id="mEntryDt" />
-              </div>
-              <div class="form-group">
-                <label>Exit Date &amp; Time</label>
-                <input type="datetime-local" id="mExitDt" />
-              </div>
-              <div class="form-group">
-                <label>Result</label>
-                <select id="mResult">
-                  <option value="">Auto-detect</option>
-                  <option value="WIN">✅ Win</option>
-                  <option value="LOSS">❌ Loss</option>
-                  <option value="EVEN">➖ Breakeven</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group wide">
-                <label>Notes / Journal</label>
-                <textarea id="mNotes" rows="3" placeholder="Setup description, entry reason, what you learned…"></textarea>
-              </div>
-              <div class="form-group">
-                <label>Tags</label>
-                <input type="text" id="mTags" placeholder="breakout, news, scalp, swing" />
-              </div>
-            </div>
-            <div class="rr-preview" id="rrPreview" style="display:none">
-              <span class="rr-item">Risk: <strong id="rrRisk">—</strong></span>
-              <span class="rr-sep">|</span>
-              <span class="rr-item">Reward: <strong id="rrReward">—</strong></span>
-              <span class="rr-sep">|</span>
-              <span class="rr-item">R:R Ratio: <strong id="rrRatio">—</strong></span>
-            </div>
-            <div style="display:flex;gap:12px;align-items:center;margin-top:4px">
-              <button class="btn-primary" id="submitManualBtn">＋ Add Trade</button>
-              <button class="btn-secondary" id="clearManualBtn" type="button">Clear Form</button>
-              <span class="req-note"><span class="req">*</span> Required fields</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- NOTES -->
-      <section class="page" id="page-notes">
-        <div class="page-header">
-          <h1>Journal Notes</h1>
-          <button class="btn-primary" id="addNoteBtn">+ New Note</button>
-        </div>
-        <div class="notes-container">
-          <div class="notes-sidebar">
-            <div class="notes-search">
-              <input type="text" id="noteSearch" placeholder="Search notes…" />
-            </div>
-            <div class="notes-list" id="notesList"></div>
-          </div>
-          <div class="note-editor" id="noteEditor">
-            <div class="note-editor-empty" id="noteEditorEmpty">
-              <span style="font-size:40px;opacity:0.2">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              </span>
-              <p>Select a note or create a new one</p>
-            </div>
-            <div class="note-editor-active" id="noteEditorActive" style="display:none">
-              <input type="text" class="note-title-input" id="noteTitleInput" placeholder="Note title…" />
-              <div class="note-meta" id="noteMeta"></div>
-              <textarea class="note-body-input" id="noteBodyInput" placeholder="Write your thoughts, analysis, lessons learned…"></textarea>
-              <div class="note-actions">
-                <input type="text" id="noteTagsInput" placeholder="Tags: trading, psychology, setup…" />
-                <button class="btn-primary" id="saveNoteBtn">Save Note</button>
-                <button class="btn-danger" id="deleteNoteBtn">Delete</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </div><!-- end pages-container -->
-  </main>
-
-  <!-- TRADE MODAL -->
-  <div class="modal-overlay" id="tradeModal" style="display:none">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 id="modalTitle">Trade Details</h2>
-        <button class="modal-close" id="modalClose">✕</button>
       </div>
-      <div class="modal-body" id="modalBody"></div>
+    </section>
+
+    <!-- ══ TRADE LOG ══ -->
+    <section class="page" id="page-trades">
+      <div class="page-header">
+        <h1>Trade Log</h1>
+        <div class="log-controls">
+          <input type="text" class="search-input" id="tradeSearch" placeholder="Search symbol, notes…"/>
+          <select class="filter-select" id="sideFilter">
+            <option value="">All Sides</option>
+            <option value="LONG">Long</option>
+            <option value="SHORT">Short</option>
+          </select>
+          <select class="filter-select" id="resultFilter">
+            <option value="">All Results</option>
+            <option value="WIN">Wins</option>
+            <option value="LOSS">Losses</option>
+            <option value="EVEN">Breakeven</option>
+          </select>
+          <button class="btn-sm-secondary" id="exportCsvBtn">↓ Export CSV</button>
+        </div>
+      </div>
+      <div class="table-wrap table-scroll">
+        <table class="data-table" id="fullTradesTable">
+          <thead>
+            <tr>
+              <th data-sort="date">Date ↕</th>
+              <th data-sort="symbol">Symbol ↕</th>
+              <th>Side</th>
+              <th data-sort="qty">Qty ↕</th>
+              <th data-sort="entry">Entry ↕</th>
+              <th data-sort="exit">Exit ↕</th>
+              <th data-sort="pnl">P&amp;L ↕</th>
+              <th data-sort="r">R ↕</th>
+              <th>Duration</th>
+              <th>Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="fullTradesTbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </section>
+
+    <!-- ══ ANALYTICS ══ -->
+    <section class="page" id="page-analytics">
+      <div class="page-header"><h1>Analytics</h1></div>
+      <div class="analytics-grid">
+        <div class="chart-card chart-card-tall">
+          <div class="chart-head"><div class="chart-title"><span class="chart-dot"></span>Monthly P&amp;L</div></div>
+          <canvas id="monthlyPnlChart"></canvas>
+        </div>
+        <div class="chart-card chart-card-tall">
+          <div class="chart-head"><div class="chart-title"><span class="chart-dot"></span>R-Multiple Distribution</div></div>
+          <canvas id="rMultipleChart"></canvas>
+        </div>
+        <div class="chart-card chart-card-tall">
+          <div class="chart-head"><div class="chart-title"><span class="chart-dot"></span>Drawdown Curve</div></div>
+          <canvas id="drawdownChart"></canvas>
+        </div>
+        <div class="chart-card chart-card-tall">
+          <div class="chart-head"><div class="chart-title"><span class="chart-dot"></span>Win Rate by Symbol</div></div>
+          <canvas id="symbolWinRateChart"></canvas>
+        </div>
+        <div class="chart-card chart-card-tall">
+          <div class="chart-head"><div class="chart-title"><span class="chart-dot"></span>Duration vs P&amp;L</div></div>
+          <canvas id="durationScatterChart"></canvas>
+        </div>
+        <div class="chart-card chart-card-tall">
+          <div class="chart-head"><div class="chart-title"><span class="chart-dot"></span>Win/Loss Streaks</div></div>
+          <canvas id="streakChart"></canvas>
+        </div>
+      </div>
+      <div class="advanced-stats">
+        <div class="section-title-bar" style="margin-bottom:16px"><span class="section-dot"></span><span>Advanced Metrics</span></div>
+        <div class="metrics-grid" id="metricsGrid"></div>
+      </div>
+    </section>
+
+    <!-- ══ CALENDAR ══ -->
+    <section class="page" id="page-calendar">
+      <div class="page-header">
+        <h1>Trade Calendar</h1>
+        <div class="cal-nav">
+          <button id="calPrev" class="btn-sm-secondary">‹</button>
+          <span id="calMonthLabel" style="font-weight:700;font-size:15px;min-width:130px;text-align:center"></span>
+          <button id="calNext" class="btn-sm-secondary">›</button>
+        </div>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+      <div class="cal-detail" id="calDayDetail" style="display:none">
+        <div class="cal-detail-head">
+          <span id="calDetailDate"></span>
+          <button id="calDetailClose">✕</button>
+        </div>
+        <div id="calDetailContent"></div>
+      </div>
+    </section>
+
+    <!-- ══ IMPORT ══ -->
+    <section class="page" id="page-import">
+      <div class="page-header"><h1>Import Trades</h1></div>
+      <div class="import-layout">
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-icon">
+            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div class="drop-title">Drop file or screenshot here</div>
+          <div class="drop-sub">CSV, XLSX, XLS or Screenshot — auto-detects format</div>
+          <div class="drop-tags">
+            <span class="drop-tag hot">Exness MT5</span>
+            <span class="drop-tag hot">MetaTrader 4/5</span>
+            <span class="drop-tag">OANDA</span>
+            <span class="drop-tag">Binance</span>
+            <span class="drop-tag">Bybit</span>
+            <span class="drop-tag">Generic CSV</span>
+          </div>
+          <label class="btn-browse">
+            📂 Browse File
+            <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.txt,.png,.jpg,.jpeg,.webp" hidden/>
+          </label>
+          <div class="screenshot-preview" id="screenshotPreview" style="display:none">
+            <img id="screenshotImg" src="" alt="Preview"/>
+          </div>
+          <div class="ai-processing" id="aiProcessing" style="display:none">
+            <div class="ai-spinner"></div>
+            <span>AI reading screenshot…</span>
+          </div>
+          <div class="drop-tip">
+            📸 <strong>New:</strong> Drop a screenshot — AI reads and imports trades automatically
+          </div>
+        </div>
+        <div class="import-log-card" id="importLog">
+          <div class="import-log-head">Import Log</div>
+          <div class="import-log-body" id="importLogBody">
+            <p style="color:var(--text3)">Import activity will appear here…</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-block" id="previewSection" style="display:none">
+        <div class="preview-head">
+          <span id="previewInfo"></span>
+          <div style="display:flex;gap:8px">
+            <button class="btn-sm-secondary" id="cancelImportBtn">Cancel</button>
+            <button class="btn-primary" id="confirmImportBtn">Import Trades</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="previewTable">
+            <thead><tr id="previewThead"></tr></thead>
+            <tbody id="previewTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="manual-section">
+        <div class="section-title-bar" style="margin-bottom:20px"><span class="section-dot"></span><span>Add Trade Manually</span></div>
+        <div id="manualForm">
+          <div class="form-row">
+            <div class="form-group"><label>Symbol <span class="req">*</span></label><input type="text" id="mSymbol" placeholder="XAU/USD, BTC/USD…"/></div>
+            <div class="form-group"><label>Side <span class="req">*</span></label><select id="mSide"><option value="LONG">📈 Long (Buy)</option><option value="SHORT">📉 Short (Sell)</option></select></div>
+            <div class="form-group"><label>Qty / Lots <span class="req">*</span></label><input type="number" id="mQty" placeholder="0.01" min="0" step="any"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Entry Price <span class="req">*</span></label><input type="number" id="mEntry" placeholder="0.000" step="any" oninput="App.calcManualPnl()"/></div>
+            <div class="form-group"><label>Exit Price</label><input type="number" id="mExit" placeholder="0.000" step="any" oninput="App.calcManualPnl()"/></div>
+            <div class="form-group"><label>P&amp;L (auto)</label><input type="text" id="mPnlPreview" placeholder="Auto" readonly style="font-family:var(--font-mono);font-weight:700;cursor:default"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Stop Loss</label><input type="number" id="mStop" placeholder="0.000" step="any" oninput="App.calcManualPnl()"/></div>
+            <div class="form-group"><label>Take Profit</label><input type="number" id="mTP" placeholder="0.000" step="any" oninput="App.calcManualPnl()"/></div>
+            <div class="form-group"><label>Commission</label><input type="number" id="mCommission" placeholder="0.00" step="any" oninput="App.calcManualPnl()"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Entry Date/Time <span class="req">*</span></label><input type="datetime-local" id="mEntryDt"/></div>
+            <div class="form-group"><label>Exit Date/Time</label><input type="datetime-local" id="mExitDt"/></div>
+            <div class="form-group"><label>Result</label><select id="mResult"><option value="">Auto</option><option value="WIN">✅ Win</option><option value="LOSS">❌ Loss</option><option value="EVEN">➖ Breakeven</option></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="grid-column:1/-1"><label>Notes / Journal</label><textarea id="mNotes" rows="3" placeholder="Setup, entry reason, lessons learned…"></textarea></div>
+          </div>
+          <div class="rr-preview" id="rrPreview" style="display:none">
+            <span>Risk: <strong id="rrRisk">—</strong></span>
+            <span class="rr-sep">|</span>
+            <span>Reward: <strong id="rrReward">—</strong></span>
+            <span class="rr-sep">|</span>
+            <span>R:R: <strong id="rrRatio">—</strong></span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
+            <button class="btn-primary" id="submitManualBtn">＋ Add Trade</button>
+            <button class="btn-sm-secondary" id="clearManualBtn">Clear</button>
+            <span style="font-size:11.5px;color:var(--text3)"><span class="req">*</span> Required</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ NOTES ══ -->
+    <section class="page" id="page-notes">
+      <div class="page-header">
+        <h1>Journal Notes</h1>
+        <button class="btn-primary" id="addNoteBtn">+ New Note</button>
+      </div>
+      <div class="notes-layout">
+        <div class="notes-sidebar-panel">
+          <div class="notes-search-wrap">
+            <input type="text" id="noteSearch" placeholder="Search notes…"/>
+          </div>
+          <div class="notes-list" id="notesList"></div>
+        </div>
+        <div class="note-editor" id="noteEditor">
+          <div class="note-empty" id="noteEditorEmpty">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <p>Select or create a note</p>
+          </div>
+          <div class="note-active" id="noteEditorActive" style="display:none">
+            <input class="note-title-in" type="text" id="noteTitleInput" placeholder="Note title…"/>
+            <div class="note-meta-bar" id="noteMeta"></div>
+            <textarea class="note-body-in" id="noteBodyInput" placeholder="Write your thoughts, analysis, lessons learned…"></textarea>
+            <div class="note-footer">
+              <input type="text" id="noteTagsInput" placeholder="Tags: psychology, setup, review…"/>
+              <button class="btn-primary" id="saveNoteBtn">Save</button>
+              <button class="btn-danger" id="deleteNoteBtn">Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- end pages-container -->
+</div><!-- end main-wrap -->
+
+<!-- ════════════════════════════════════
+     SETTINGS DRAWER
+════════════════════════════════════ -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-overlay" id="settingsOverlay"></div>
+  <div class="settings-drawer">
+    <div class="sd-head">
+      <div class="sd-title">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </div>
+      <button class="sd-close" id="settingsClose">✕</button>
     </div>
-  </div>
-
-  <!-- BALANCE MODAL -->
-  <div class="modal-overlay" id="balanceModal" style="display:none">
-    <div class="modal" style="max-width:380px">
-      <div class="modal-header">
-        <h2>Set Starting Balance</h2>
-        <button class="modal-close" id="balanceModalClose">✕</button>
+    <div class="sd-body">
+      <div class="sd-section">
+        <div class="sd-section-label">Appearance</div>
+        <div class="sd-row">
+          <div class="sd-row-info"><div class="sd-row-title">Theme</div><div class="sd-row-sub">Dark or light interface</div></div>
+          <div class="theme-switcher">
+            <button class="theme-opt active" data-theme="dark">🌙 Dark</button>
+            <button class="theme-opt" data-theme="light">☀️ Light</button>
+          </div>
+        </div>
+        <div class="sd-row">
+          <div class="sd-row-info"><div class="sd-row-title">Accent Color</div><div class="sd-row-sub">Primary brand color</div></div>
+          <div class="accent-swatches">
+            <button class="swatch active" data-accent="gold"   style="background:#D4AF37" title="Gold"></button>
+            <button class="swatch"        data-accent="blue"   style="background:#4C8EF5" title="Blue"></button>
+            <button class="swatch"        data-accent="green"  style="background:#00E676" title="Green"></button>
+            <button class="swatch"        data-accent="purple" style="background:#9B78FA" title="Purple"></button>
+            <button class="swatch"        data-accent="rose"   style="background:#FF4D6D" title="Rose"></button>
+          </div>
+        </div>
+        <div class="sd-row">
+          <div class="sd-row-info"><div class="sd-row-title">Compact Mode</div><div class="sd-row-sub">Tighter UI spacing</div></div>
+          <label class="toggle-sw"><input type="checkbox" id="compactToggle"/><span class="sw-track"><span class="sw-thumb"></span></span></label>
+        </div>
       </div>
-      <div class="modal-body">
-        <p style="color:var(--text2);font-size:13px;margin-bottom:18px;line-height:1.7">
-          Enter your account starting balance. KradeForge will automatically
-          add or subtract your trade P&amp;L to show your current balance.
-        </p>
-        <div class="form-group" style="margin-bottom:18px">
-          <label>Starting Balance (USD)</label>
-          <input type="number" id="startingBalanceInput" placeholder="e.g. 10000" step="0.01" min="0"
-            style="font-size:18px;font-family:var(--font-mono);font-weight:700;color:var(--gold2)" />
+      <div class="sd-section">
+        <div class="sd-section-label">Trading</div>
+        <div class="sd-row">
+          <div class="sd-row-info"><div class="sd-row-title">Currency</div><div class="sd-row-sub">Display currency</div></div>
+          <select class="sd-select" id="currencySelect"><option value="USD">USD $</option><option value="EUR">EUR €</option><option value="GBP">GBP £</option><option value="ETB">ETB Br</option></select>
         </div>
-        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:18px;font-size:12.5px;color:var(--text2)">
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-            <span>Starting Balance:</span>
-            <span id="bm_starting" style="font-family:var(--font-mono);color:var(--text);font-weight:700">$0.00</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-            <span>Total P&amp;L:</span>
-            <span id="bm_pnl" style="font-family:var(--font-mono);font-weight:700">$0.00</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:10px;font-weight:700;font-size:13.5px">
-            <span>Current Balance:</span>
-            <span id="bm_current" style="font-family:var(--font-mono);color:var(--gold2)">$0.00</span>
-          </div>
+        <div class="sd-row">
+          <div class="sd-row-info"><div class="sd-row-title">Rows Per Page</div><div class="sd-row-sub">Trade log pagination</div></div>
+          <select class="sd-select" id="perPageSelect"><option value="25">25</option><option value="50" selected>50</option><option value="100">100</option></select>
         </div>
-        <button class="btn-primary" id="saveBalanceBtn" style="width:100%">Save Balance</button>
+      </div>
+      <div class="sd-section">
+        <div class="sd-section-label">Account</div>
+        <div class="sd-row"><div class="sd-row-info"><div class="sd-row-title">Starting Balance</div><div class="sd-row-sub">Account capital</div></div><button class="sd-btn" onclick="App.openBalanceModal();KF.closeSettings()">Edit</button></div>
+        <div class="sd-row"><div class="sd-row-info"><div class="sd-row-title">Export Data</div><div class="sd-row-sub">Download as CSV</div></div><button class="sd-btn" onclick="document.getElementById('exportAllBtn').click();KF.closeSettings()">Export</button></div>
+        <div class="sd-row"><div class="sd-row-info"><div class="sd-row-title">Clear All Data</div><div class="sd-row-sub" style="color:var(--red)">Delete all trades</div></div><button class="sd-btn danger" onclick="document.getElementById('clearDataBtn').click();KF.closeSettings()">Clear</button></div>
+        <div class="sd-row"><div class="sd-row-info"><div class="sd-row-title">Sign Out</div><div class="sd-row-sub">Log out of account</div></div><button class="sd-btn danger" onclick="App.signOut()">Sign Out</button></div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- TOAST -->
-  <div class="toast" id="toast"></div>
+<!-- ════════════════════════════════════
+     MODALS
+════════════════════════════════════ -->
+<div class="modal-overlay" id="tradeModal" style="display:none">
+  <div class="modal">
+    <div class="modal-head"><h2 id="modalTitle">Trade Details</h2><button class="modal-x" id="modalClose">✕</button></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
 
-  <script src="js/data.js"></script>
-  <script src="js/parser.js"></script>
-  <script src="js/charts.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/app.js"></script>
+<div class="modal-overlay" id="balanceModal" style="display:none">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-head"><h2>Set Starting Balance</h2><button class="modal-x" id="balanceModalClose">✕</button></div>
+    <div class="modal-body">
+      <p style="color:var(--text2);font-size:13px;margin-bottom:18px;line-height:1.7">Enter your account starting balance. KradeForge will track your current balance by adding your trade P&L.</p>
+      <div class="form-group" style="margin-bottom:18px">
+        <label>Starting Balance (USD)</label>
+        <input type="number" id="startingBalanceInput" placeholder="e.g. 10000" step="0.01" min="0" style="font-size:18px;font-family:var(--font-mono);font-weight:700;color:var(--gold)"/>
+      </div>
+      <div class="balance-preview">
+        <div class="bp-row"><span>Starting Balance:</span><span id="bm_starting" class="bp-val">$0.00</span></div>
+        <div class="bp-row"><span>Total P&L:</span><span id="bm_pnl" class="bp-val">$0.00</span></div>
+        <div class="bp-row bp-total"><span>Current Balance:</span><span id="bm_current" class="bp-val gold">$0.00</span></div>
+      </div>
+      <button class="btn-primary" id="saveBalanceBtn" style="width:100%;margin-top:6px">Save Balance</button>
+    </div>
+  </div>
+</div>
 
-  <!-- Sidebar user info sync -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Sync sidebar user info with topbar
-      const syncUser = () => {
-        const name = document.getElementById('dropdownName')?.textContent || 'Trader';
-        const el = document.getElementById('sidebarUserName');
-        const av = document.getElementById('sidebarUserAvatar');
-        if (el) el.textContent = name;
-        if (av && name !== 'User') av.textContent = name.charAt(0).toUpperCase();
-      };
-      // Poll until app sets user info
-      const t = setInterval(() => {
-        const name = document.getElementById('dropdownName')?.textContent;
-        if (name && name !== 'User') { syncUser(); clearInterval(t); }
-      }, 500);
-      setTimeout(() => clearInterval(t), 10000);
+<!-- Goal Modal -->
+<div class="modal-overlay" id="goalModal" style="display:none">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-head"><h2>Set Monthly Goal</h2><button class="modal-x" id="goalModalClose">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group" style="margin-bottom:18px">
+        <label>Monthly Profit Target (USD)</label>
+        <input type="number" id="goalTargetInput" placeholder="e.g. 1000" step="1" min="0" style="font-size:18px;font-family:var(--font-mono);font-weight:700;color:var(--gold)"/>
+      </div>
+      <button class="btn-primary" id="saveGoalBtn" style="width:100%">Save Goal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden legacy elements for JS compatibility -->
+<button id="exportAllBtn" style="display:none"></button>
+<button id="clearDataBtn" style="display:none"></button>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/data.js"></script>
+<script src="js/parser.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+const KF = (() => {
+  let _theme  = localStorage.getItem('kf_theme')  || 'dark';
+  let _accent = localStorage.getItem('kf_accent') || 'gold';
+  let _sidebarExpanded = localStorage.getItem('kf_sidebar') !== 'collapsed';
+
+  const ACCENTS = {
+    gold:   { main:'#D4AF37', bright:'#E8C86A', pale:'#F5E0A0', dim:'rgba(212,175,55,0.12)',  border:'rgba(212,175,55,0.22)',  glow:'rgba(212,175,55,0.06)'  },
+    blue:   { main:'#4C8EF5', bright:'#7AAAFF', pale:'#B8CFFF', dim:'rgba(76,142,245,0.12)',   border:'rgba(76,142,245,0.22)',  glow:'rgba(76,142,245,0.06)'  },
+    green:  { main:'#00E676', bright:'#33EF8F', pale:'#9AFFD9', dim:'rgba(0,230,118,0.12)',    border:'rgba(0,230,118,0.22)',   glow:'rgba(0,230,118,0.06)'   },
+    purple: { main:'#9B78FA', bright:'#C4B0FF', pale:'#DDD6FF', dim:'rgba(155,120,250,0.12)',  border:'rgba(155,120,250,0.22)', glow:'rgba(155,120,250,0.06)' },
+    rose:   { main:'#FF4D6D', bright:'#FF7A90', pale:'#FFB8C6', dim:'rgba(255,77,109,0.12)',   border:'rgba(255,77,109,0.22)',  glow:'rgba(255,77,109,0.06)'  },
+  };
+
+  function applyTheme(t) {
+    _theme = t;
+    localStorage.setItem('kf_theme', t);
+    document.documentElement.setAttribute('data-theme', t);
+    document.querySelector('.icon-moon').style.display = t === 'dark'  ? 'block' : 'none';
+    document.querySelector('.icon-sun').style.display  = t === 'light' ? 'block' : 'none';
+    document.querySelectorAll('.theme-opt').forEach(b => b.classList.toggle('active', b.dataset.theme === t));
+  }
+
+  function applyAccent(a) {
+    _accent = a;
+    localStorage.setItem('kf_accent', a);
+    const c = ACCENTS[a] || ACCENTS.gold;
+    const r = document.documentElement;
+    r.style.setProperty('--gold',        c.main);
+    r.style.setProperty('--gold2',       c.bright);
+    r.style.setProperty('--gold3',       c.pale);
+    r.style.setProperty('--gold-dim',    c.dim);
+    r.style.setProperty('--gold-border', c.border);
+    r.style.setProperty('--gold-glow',   c.glow);
+    document.querySelectorAll('.swatch').forEach(b => b.classList.toggle('active', b.dataset.accent === a));
+  }
+
+  function setSidebar(expanded) {
+    _sidebarExpanded = expanded;
+    localStorage.setItem('kf_sidebar', expanded ? 'expanded' : 'collapsed');
+    document.getElementById('sidebar').classList.toggle('expanded', expanded);
+    document.getElementById('mainWrap').classList.toggle('sidebar-expanded', expanded);
+    document.getElementById('hamburger').classList.toggle('open', expanded);
+  }
+
+  function openSettings()  { document.getElementById('settingsPanel').classList.add('open'); }
+  function closeSettings() { document.getElementById('settingsPanel').classList.remove('open'); }
+
+  // Welcome greeting
+  function setGreeting() {
+    const h = new Date().getHours();
+    const part = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+    const name = document.getElementById('dropdownName')?.textContent || 'Trader';
+    const el = document.getElementById('welcomeGreeting');
+    if (el) el.textContent = `Good ${part}, ${name} 👋`;
+
+    const dateEl = document.getElementById('welcomeDate');
+    if (dateEl) {
+      const now = new Date();
+      dateEl.textContent = now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+    }
+  }
+
+  // Performance score (0-100)
+  function updateScore(trades) {
+    if (!trades || !trades.length) return;
+    const wins = trades.filter(t => t.result === 'WIN').length;
+    const wr = wins / trades.length;
+    const pnlArr = trades.map(t => parseFloat(t.pnl) || 0);
+    const totalPnl = pnlArr.reduce((a,b) => a+b, 0);
+    const score = Math.min(100, Math.round(wr * 60 + (totalPnl > 0 ? 30 : 0) + (trades.length >= 10 ? 10 : trades.length)));
+    const el = document.getElementById('scoreVal');
+    const ring = document.getElementById('scoreRing');
+    const desc = document.getElementById('scoreDesc');
+    if (el) el.textContent = score;
+    if (ring) {
+      const circ = 2 * Math.PI * 26;
+      ring.style.strokeDasharray  = circ;
+      ring.style.strokeDashoffset = circ - (circ * score / 100);
+      ring.style.stroke = score >= 70 ? '#00E676' : score >= 40 ? '#D4AF37' : '#FF4D6D';
+    }
+    if (desc) desc.textContent = score >= 70 ? 'Excellent performance' : score >= 40 ? 'Room to improve' : 'Needs attention';
+  }
+
+  // Streak calculation
+  function updateStreaks(trades) {
+    if (!trades || !trades.length) return;
+    const sorted = [...trades].sort((a,b) => new Date(a.entry_time) - new Date(b.entry_time));
+    let ws = 0, ls = 0, maxWs = 0, maxLs = 0, curW = 0, curL = 0;
+    sorted.forEach(t => {
+      if (t.result === 'WIN')  { curW++; curL = 0; maxWs = Math.max(maxWs, curW); }
+      else if (t.result === 'LOSS') { curL++; curW = 0; maxLs = Math.max(maxLs, curL); }
+      else { curW = 0; curL = 0; }
     });
-  </script>
-  <script>
-  // KradeForge UI Controller
-  const KF = (() => {
-    let _theme = localStorage.getItem('kf_theme') || 'dark';
-    let _accent = localStorage.getItem('kf_accent') || 'gold';
+    // Current streak (from end)
+    const rev = [...sorted].reverse();
+    for (const t of rev) {
+      if (t.result === 'WIN') { ws++; } else break;
+    }
+    for (const t of rev) {
+      if (t.result === 'LOSS') { ls++; } else break;
+    }
+    document.getElementById('winStreakVal').textContent  = ws  || maxWs;
+    document.getElementById('lossStreakVal').textContent = ls  || maxLs;
+  }
 
-    const ACCENTS = {
-      gold:   { main:'#C9A84C', bright:'#E8C76A', pale:'#F5E0A0', dim:'rgba(201,168,76,0.12)', border:'rgba(201,168,76,0.22)', glow:'rgba(201,168,76,0.06)' },
-      blue:   { main:'#5B8EFF', bright:'#7AAAFF', pale:'#B8CFFF', dim:'rgba(91,142,255,0.12)',  border:'rgba(91,142,255,0.25)',  glow:'rgba(91,142,255,0.06)' },
-      green:  { main:'#00D68F', bright:'#2EEBB0', pale:'#9AFFD9', dim:'rgba(0,214,143,0.12)',   border:'rgba(0,214,143,0.25)',   glow:'rgba(0,214,143,0.06)' },
-      purple: { main:'#A78BFA', bright:'#C4B0FF', pale:'#DDD6FF', dim:'rgba(167,139,250,0.12)', border:'rgba(167,139,250,0.25)', glow:'rgba(167,139,250,0.06)' },
-      rose:   { main:'#FF4F6E', bright:'#FF7A90', pale:'#FFB8C6', dim:'rgba(255,79,110,0.12)',  border:'rgba(255,79,110,0.25)',  glow:'rgba(255,79,110,0.06)' },
-    };
+  // Risk stats
+  function updateRisk(trades) {
+    if (!trades || !trades.length) return;
+    const pnls = trades.map(t => parseFloat(t.pnl)||0);
+    const totalPnl = pnls.reduce((a,b)=>a+b,0);
+    // Expectancy
+    const wins = trades.filter(t=>t.result==='WIN');
+    const losses = trades.filter(t=>t.result==='LOSS');
+    const avgW = wins.length ? wins.reduce((a,t)=>a+(parseFloat(t.pnl)||0),0)/wins.length : 0;
+    const avgL = losses.length ? Math.abs(losses.reduce((a,t)=>a+(parseFloat(t.pnl)||0),0)/losses.length) : 0;
+    const wr = trades.length ? wins.length/trades.length : 0;
+    const exp = (wr * avgW) - ((1-wr) * avgL);
+    // RR
+    const rVals = trades.filter(t=>t.r_multiple).map(t=>parseFloat(t.r_multiple)||0);
+    const avgRR = rVals.length ? rVals.reduce((a,b)=>a+b,0)/rVals.length : 0;
+    // Max DD
+    let peak = 0, dd = 0, running = 0;
+    pnls.forEach(p => { running += p; if(running > peak) peak = running; dd = Math.min(dd, running - peak); });
 
-    function applyTheme(t) {
-      _theme = t;
-      localStorage.setItem('kf_theme', t);
-      document.documentElement.setAttribute('data-theme', t);
-      // Update toggle icons
-      const dark = document.querySelector('.theme-icon-dark');
-      const light = document.querySelector('.theme-icon-light');
-      if (dark)  dark.style.display  = t === 'dark'  ? 'flex' : 'none';
-      if (light) light.style.display = t === 'light' ? 'flex' : 'none';
-      // Update settings buttons
-      document.querySelectorAll('.theme-opt').forEach(b => {
-        b.classList.toggle('active', b.dataset.theme === t);
+    const fmt = v => '$' + Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('riskRR').textContent  = avgRR.toFixed(2);
+    document.getElementById('riskDD').textContent  = fmt(dd);
+    document.getElementById('riskAvg').textContent = fmt(avgL);
+    document.getElementById('riskExp').textContent = (exp >= 0 ? '+' : '') + fmt(exp);
+    const expEl = document.getElementById('riskExp');
+    if (expEl) expEl.className = 'risk-val ' + (exp >= 0 ? 'green' : 'red');
+  }
+
+  // Goal
+  function updateGoal(totalPnl) {
+    const goal = parseFloat(localStorage.getItem('kf_goal') || '0');
+    const curr = Math.max(0, totalPnl);
+    const pct  = goal > 0 ? Math.min(100, Math.round((curr/goal)*100)) : 0;
+    document.getElementById('goalTarget').textContent  = goal > 0 ? '$' + goal.toLocaleString() : 'Not set';
+    document.getElementById('goalCurrent').textContent = '$' + Math.max(0,curr).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+    document.getElementById('goalBarFill').style.width = pct + '%';
+    document.getElementById('goalPct').textContent = pct + '%';
+    document.getElementById('goalDesc').textContent = goal > 0
+      ? (curr >= goal ? '🎯 Goal achieved!' : `$${Math.max(0,(goal-curr)).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})} remaining`)
+      : 'Set a monthly profit goal';
+  }
+
+  function init() {
+    applyTheme(_theme);
+    applyAccent(_accent);
+
+    // Init sidebar state (collapsed by default on mobile, use saved on desktop)
+    const mobile = window.innerWidth < 768;
+    if (mobile) { setSidebar(false); }
+    else { setSidebar(_sidebarExpanded); }
+
+    // Hamburger
+    document.getElementById('hamburger')?.addEventListener('click', () => setSidebar(!_sidebarExpanded));
+    document.getElementById('sidebarOverlay')?.addEventListener('click', () => setSidebar(false));
+
+    // Auto close on mobile nav click
+    document.querySelectorAll('.nav-item[data-page]').forEach(el => {
+      el.addEventListener('click', () => { if (window.innerWidth < 768) setSidebar(false); });
+    });
+
+    // Theme toggle
+    document.getElementById('themeToggle')?.addEventListener('click', () => applyTheme(_theme === 'dark' ? 'light' : 'dark'));
+
+    // Settings
+    document.getElementById('sidebarSettingsBtn')?.addEventListener('click', e => { e.preventDefault(); openSettings(); if(window.innerWidth<768) setSidebar(false); });
+    document.getElementById('settingsClose')?.addEventListener('click', closeSettings);
+    document.getElementById('settingsOverlay')?.addEventListener('click', closeSettings);
+    document.querySelectorAll('.theme-opt').forEach(b => b.addEventListener('click', () => applyTheme(b.dataset.theme)));
+    document.querySelectorAll('.swatch').forEach(b => b.addEventListener('click', () => applyAccent(b.dataset.accent)));
+
+    // Compact
+    const ct = document.getElementById('compactToggle');
+    const isC = localStorage.getItem('kf_compact') === '1';
+    if (ct) {
+      ct.checked = isC;
+      if (isC) document.documentElement.classList.add('compact');
+      ct.addEventListener('change', () => {
+        document.documentElement.classList.toggle('compact', ct.checked);
+        localStorage.setItem('kf_compact', ct.checked ? '1' : '0');
       });
     }
 
-    function applyAccent(a) {
-      _accent = a;
-      localStorage.setItem('kf_accent', a);
-      const c = ACCENTS[a] || ACCENTS.gold;
-      const r = document.documentElement;
-      r.style.setProperty('--gold',        c.main);
-      r.style.setProperty('--gold2',       c.bright);
-      r.style.setProperty('--gold3',       c.pale);
-      r.style.setProperty('--gold-dim',    c.dim);
-      r.style.setProperty('--gold-border', c.border);
-      r.style.setProperty('--gold-glow',   c.glow);
-      document.querySelectorAll('.swatch').forEach(b => {
-        b.classList.toggle('active', b.dataset.accent === a);
-      });
-    }
+    // Goal modal
+    document.getElementById('goalSetBtn')?.addEventListener('click', () => { document.getElementById('goalModal').style.display='flex'; });
+    document.getElementById('goalModalClose')?.addEventListener('click', () => { document.getElementById('goalModal').style.display='none'; });
+    document.getElementById('saveGoalBtn')?.addEventListener('click', () => {
+      const v = parseFloat(document.getElementById('goalTargetInput').value);
+      if (v > 0) { localStorage.setItem('kf_goal', v); updateGoal(0); document.getElementById('goalModal').style.display='none'; }
+    });
 
-    function openSettings() {
-      document.getElementById('settingsPanel').classList.add('open');
-    }
-    function closeSettings() {
-      document.getElementById('settingsPanel').classList.remove('open');
-    }
-
-    function init() {
-      // Apply saved preferences
-      applyTheme(_theme);
-      applyAccent(_accent);
-
-      // Theme toggle button (topbar)
-      document.getElementById('themeToggle')?.addEventListener('click', () => {
-        applyTheme(_theme === 'dark' ? 'light' : 'dark');
-      });
-
-      // Settings open/close
-      document.getElementById('settingsBtn')?.addEventListener('click', openSettings);
-      document.getElementById('settingsClose')?.addEventListener('click', closeSettings);
-      document.getElementById('settingsOverlay')?.addEventListener('click', closeSettings);
-
-      // Theme switcher in settings
-      document.querySelectorAll('.theme-opt').forEach(b => {
-        b.addEventListener('click', () => applyTheme(b.dataset.theme));
-      });
-
-      // Accent swatches
-      document.querySelectorAll('.swatch').forEach(b => {
-        b.addEventListener('click', () => applyAccent(b.dataset.accent));
-      });
-
-      // Compact mode
-      const compactToggle = document.getElementById('compactToggle');
-      const isCompact = localStorage.getItem('kf_compact') === '1';
-      if (compactToggle) {
-        compactToggle.checked = isCompact;
-        if (isCompact) document.documentElement.classList.add('compact');
-        compactToggle.addEventListener('change', () => {
-          const on = compactToggle.checked;
-          document.documentElement.classList.toggle('compact', on);
-          localStorage.setItem('kf_compact', on ? '1' : '0');
-        });
+    // Sidebar user sync
+    setTimeout(() => {
+      const name = document.getElementById('dropdownName')?.textContent;
+      if (name && name !== 'User') {
+        const av = name.charAt(0).toUpperCase();
+        document.getElementById('sidebarUserAvatar').textContent = av;
+        document.getElementById('sidebarUserName').textContent = name;
+        document.getElementById('welcomeGreeting').textContent = `Good ${new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, ${name} 👋`;
       }
-    }
+    }, 1200);
 
-    return { init, openSettings, closeSettings, applyTheme, applyAccent };
-  })();
+    setGreeting();
+  }
 
-  document.addEventListener('DOMContentLoaded', KF.init);
-  </script>
+  // Called by app.js after data loads
+  window.KF_onDataLoad = function(trades, totalPnl) {
+    updateScore(trades);
+    updateStreaks(trades);
+    updateRisk(trades);
+    updateGoal(totalPnl);
+    setTimeout(() => {
+      const name = document.getElementById('dropdownName')?.textContent || 'Trader';
+      document.getElementById('sidebarUserAvatar').textContent = name.charAt(0).toUpperCase();
+      document.getElementById('sidebarUserName').textContent = name;
+    }, 500);
+  };
+
+  return { init, openSettings, closeSettings, applyTheme, applyAccent, setSidebar, updateGoal };
+})();
+
+document.addEventListener('DOMContentLoaded', KF.init);
+</script>
 </body>
 </html>
