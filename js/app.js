@@ -150,22 +150,22 @@ const App = (() => {
     const sidebarOverlay = document.getElementById('sidebarOverlay');
 
     function openSidebar() {
-      sidebar.classList.add('open');
-      sidebarOverlay.classList.add('show');
-      document.body.style.overflow = 'hidden'; // prevent background scroll
+      if (typeof KF !== 'undefined' && KF.setSidebar) { KF.setSidebar(true); }
+      else { sidebar.classList.add('open'); sidebarOverlay.classList.add('show'); }
+      document.body.style.overflow = window.innerWidth < 768 ? 'hidden' : '';
     }
     function closeSidebar() {
-      sidebar.classList.remove('open');
-      sidebarOverlay.classList.remove('show');
+      if (typeof KF !== 'undefined' && KF.setSidebar) { KF.setSidebar(false); }
+      else { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('show'); }
       document.body.style.overflow = '';
     }
 
-    document.getElementById('menuToggle').addEventListener('click', () => {
-      sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    document.getElementById('hamburger')?.addEventListener('click', () => {
+      (sidebar.classList.contains('open') || sidebar.classList.contains('expanded')) ? closeSidebar() : openSidebar();
     });
 
-    // Close when tapping overlay
-    sidebarOverlay.addEventListener('click', closeSidebar);
+    // Close when tapping overlay (safe)
+    sidebarOverlay?.addEventListener('click', closeSidebar);
 
     // Close sidebar when navigating on mobile
     document.querySelectorAll('.nav-item').forEach(item => {
@@ -208,7 +208,7 @@ const App = (() => {
 
   // ── TOPBAR ───────────────────────────────────────────────
   function bindTopbar() {
-    document.getElementById('addTradeBtn').addEventListener('click', () => {
+    document.getElementById('addTradeBtn')?.addEventListener('click', () => {
       navigateTo('import');
       document.getElementById('mSymbol').focus();
     });
