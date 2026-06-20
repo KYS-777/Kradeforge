@@ -750,6 +750,24 @@
         </div>
       </div>
       <div class="sd-section">
+        <div class="sd-section-label">AI Features</div>
+        <div class="sd-row" style="flex-direction:column;align-items:flex-start;gap:8px">
+          <div class="sd-row-info">
+            <div class="sd-row-title">Anthropic API Key</div>
+            <div class="sd-row-sub">Enables AI Coach chat + screenshot import</div>
+          </div>
+          <div style="display:flex;gap:8px;width:100%">
+            <input type="password" id="anthropicKeyInput" placeholder="sk-ant-…"
+              style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 11px;border-radius:var(--r);font-size:12px;font-family:var(--font-mono);outline:none"
+              value=""/>
+            <button class="sd-btn" id="saveApiKeyBtn">Save</button>
+          </div>
+          <div style="font-size:10.5px;color:var(--text3)">
+            Get free key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--gold)">console.anthropic.com</a>. Stored locally only.
+          </div>
+        </div>
+      </div>
+      <div class="sd-section">
         <div class="sd-section-label">Account</div>
         <div class="sd-row"><div class="sd-row-info"><div class="sd-row-title">Starting Balance</div><div class="sd-row-sub">Account capital</div></div><button class="sd-btn" onclick="App.openBalanceModal();KF.closeSettings()">Edit</button></div>
         <div class="sd-row"><div class="sd-row-info"><div class="sd-row-title">Export Data</div><div class="sd-row-sub">Download as CSV</div></div><button class="sd-btn" onclick="document.getElementById('exportAllBtn').click();KF.closeSettings()">Export</button></div>
@@ -1058,6 +1076,18 @@ const KF = (() => {
     document.getElementById('saveGoalBtn')?.addEventListener('click', () => {
       const v = parseFloat(document.getElementById('goalTargetInput').value);
       if (v > 0) { localStorage.setItem('kf_goal', v); updateGoal(0); document.getElementById('goalModal').style.display='none'; }
+    });
+
+    // API Key setting
+    const apiKeyInput = document.getElementById('anthropicKeyInput');
+    const savedKey = localStorage.getItem('kf_anthropic_key') || '';
+    if (apiKeyInput) apiKeyInput.value = savedKey;
+    document.getElementById('saveApiKeyBtn')?.addEventListener('click', () => {
+      const val = document.getElementById('anthropicKeyInput')?.value?.trim() || '';
+      localStorage.setItem('kf_anthropic_key', val);
+      // Show toast
+      const t = document.getElementById('toast');
+      if (t) { t.textContent = val ? '✓ API key saved' : 'API key cleared'; t.className = 'toast success show'; setTimeout(() => t.classList.remove('show'), 3000); }
     });
 
     // Sidebar user sync
