@@ -132,10 +132,10 @@ const App = (() => {
 
   // ── NAVIGATION ───────────────────────────────────────────
   function bindNav() {
-    document.querySelectorAll('.nav-item').forEach(item => {
+    document.querySelectorAll('.nav-item[data-page]').forEach(item => {
       item.addEventListener('click', e => {
         e.preventDefault();
-        navigateTo(item.dataset.page);
+        if (item.dataset.page) navigateTo(item.dataset.page);
       });
     });
 
@@ -181,7 +181,9 @@ const App = (() => {
     currentPage = page;
 
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(`page-${page}`).classList.add('active');
+    const pageEl = document.getElementById(`page-${page}`);
+    if (!pageEl) return;
+    pageEl.classList.add('active');
 
     document.querySelectorAll('.nav-item').forEach(item => {
       item.classList.toggle('active', item.dataset.page === page);
@@ -195,7 +197,8 @@ const App = (() => {
       import: 'Import',
       notes: 'Notes'
     };
-    document.getElementById('topbarTitle').textContent = titles[page] || page;
+    const ttEl = document.getElementById('topbarTitle');
+    if (ttEl) ttEl.textContent = titles[page] || page;
 
     // Close sidebar on mobile
     if (window.innerWidth < 768 && typeof KF !== 'undefined') KF.setSidebar(false);
@@ -225,19 +228,15 @@ const App = (() => {
 
     document.getElementById('exportAllBtn')?.addEventListener('click', exportAll);
 
-    // ── Balance pill — click to open settings ────────────
-    // balancePill click handled via HTML onclick attribute
-    const _bmc  = document.getElementById('balanceModalClose');
-    const _bsb  = document.getElementById('saveBalanceBtn');
-    const _bmo  = document.getElementById('balanceModal');
-    const _bsi  = document.getElementById('startingBalanceInput');
-    if (_bmc) _bmc.onclick = closeBalanceModal;
-    if (_bsb) _bsb.onclick = saveStartingBalance;
-    if (_bmo) _bmo.onclick = (e) => { if (e.target === _bmo) closeBalanceModal(); };
-    if (_bsi) _bsi.oninput = updateBalancePreview;
-
-    // Live preview as user types
-    document.getElementById('startingBalanceInput')?.addEventListener('input', updateBalancePreview);
+    // Balance pill click
+    document.getElementById('balancePill')?.addEventListener('click', () => openBalanceModal());
+    // Balance modal bindings — use addEventListener to capture closure
+    document.getElementById('balanceModalClose')?.addEventListener('click', () => closeBalanceModal());
+    document.getElementById('saveBalanceBtn')?.addEventListener('click', () => saveStartingBalance());
+    document.getElementById('startingBalanceInput')?.addEventListener('input', () => updateBalancePreview());
+    document.getElementById('balanceModal')?.addEventListener('click', (e) => {
+      if (e.target === document.getElementById('balanceModal')) closeBalanceModal();
+    });
 
     document.getElementById('clearDataBtn')?.addEventListener('click', async () => {
       if (confirm('Clear ALL trade data? This cannot be undone.')) {
@@ -357,37 +356,30 @@ const App = (() => {
 
     // Stats cards
     const pnlEl = document.getElementById('statNetPnl');
-    pnlEl.textContent = UI.fmtCurrency(stats.netPnl, true);
-    pnlEl.className = `stat-value ${stats.netPnl >= 0 ? 'green' : 'red'}`;
-    document.getElementById('statNetPnlPct').textContent = stats.total > 0
-      ? `${stats.wins}W / ${stats.losses}L / ${stats.even}B` : '—';
-
-    document.getElementById('statWinRate').textContent = stats.total
-      ? stats.winRate.toFixed(1) + '%' : '0%';
-    document.getElementById('statWinsLosses').textContent = `${stats.wins}W / ${stats.losses}L`;
-
-    document.getElementById('statProfitFactor').textContent =
-      stats.profitFactor === Infinity ? '∞' : stats.profitFactor.toFixed(2);
-
-    document.getElementById('statAvgWin').textContent = UI.fmtCurrency(stats.avgWin);
-    document.getElementById('statAvgWinR').textContent = stats.avgWinR ? UI.fmtR(stats.avgWinR) : '—';
-    document.getElementById('statAvgLoss').textContent = UI.fmtCurrency(stats.avgLoss);
-    document.getElementById('statAvgLossR').textContent = stats.avgLossR ? UI.fmtR(stats.avgLossR) : '—';
-
-    document.getElementById('statTotalTrades').textContent = stats.total;
-    document.getElementById('statAvgDuration').textContent = stats.avgDuration
-      ? `Avg: ${UI.fmtDuration(stats.avgDuration)}` : 'Avg: —';
-
-    document.getElementById('statBestTrade').textContent =
-      stats.bestTrade ? UI.fmtCurrency(stats.bestTrade.pnl, true) : '—';
-    document.getElementById('statBestSym').textContent = stats.bestTrade ? stats.bestTrade.symbol : '—';
-    document.getElementById('statWorstTrade').textContent =
-      stats.worstTrade ? UI.fmtCurrency(stats.worstTrade.pnl, true) : '—';
-    document.getElementById('statWorstSym').textContent = stats.worstTrade ? stats.worstTrade.symbol : '—';
+    if (pnlEl) {
+      pnlEl.textContent = UI.fmtCurrency(stats.netPnl, true);
+      pnlEl.className = `kpi-value ${stats.netPnl >= 0 ? 'green' : 'red'}`;
+    }
+    const _set = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+    _set('statNetPnlPct', stats.total > 0 ? `${stats.wins}W / ${stats.losses}L / ${stats.even}B` : '—');
+    _set('statWinRate', stats.total ? stats.winRate.toFixed(1) + '%' : '0%');
+    _set('statWinsLosses', `${stats.wins}W / ${stats.losses}L`);
+    _set('statProfitFactor', stats.profitFactor === Infinity ? '∞' : stats.profitFactor.toFixed(2));
+    _set('statAvgWin', UI.fmtCurrency(stats.avgWin));
+    _set('statAvgWinR', stats.avgWinR ? UI.fmtR(stats.avgWinR) : '—');
+    _set('statAvgLoss', UI.fmtCurrency(stats.avgLoss));
+    _set('statAvgLossR', stats.avgLossR ? UI.fmtR(stats.avgLossR) : '—');
+    _set('statTotalTrades', stats.total);
+    _set('statAvgDuration', stats.avgDuration ? `Avg: ${UI.fmtDuration(stats.avgDuration)}` : 'Avg: —');
+    _set('statBestTrade', stats.bestTrade ? UI.fmtCurrency(stats.bestTrade.pnl, true) : '—');
+    _set('statBestSym', stats.bestTrade ? stats.bestTrade.symbol : '—');
+    _set('statWorstTrade', stats.worstTrade ? UI.fmtCurrency(stats.worstTrade.pnl, true) : '—');
+    _set('statWorstSym', stats.worstTrade ? stats.worstTrade.symbol : '—');
 
     // Recent trades
     const recent = trades.slice(0, 8);
     const tbody = document.getElementById('recentTradesTbody');
+    if (!tbody) return;
     tbody.innerHTML = recent.length
       ? recent.map(t => UI.tradeRowSimple(t)).join('')
       : UI.emptyState('No trades in this period');
@@ -395,11 +387,11 @@ const App = (() => {
     updateBalancePill();
 
     // Charts
-    Charts.renderCumulativePnl(stats.cumPnl);
-    Charts.renderWinLoss(stats.wins, stats.losses, stats.even);
-    Charts.renderSymbolPnl(stats.bySymbol);
-    Charts.renderDayDist(stats.byDay);
-    Charts.renderHourPnl(stats.byHour);
+    try { Charts.renderCumulativePnl(stats.cumPnl); } catch(e) {}
+    try { Charts.renderWinLoss(stats.wins, stats.losses, stats.even); } catch(e) {}
+    try { Charts.renderSymbolPnl(stats.bySymbol); } catch(e) {}
+    try { Charts.renderDayDist(stats.byDay); } catch(e) {}
+    try { Charts.renderHourPnl(stats.byHour); } catch(e) {}
   }
 
   // ── TRADE LOG ────────────────────────────────────────────
@@ -433,9 +425,9 @@ const App = (() => {
 
   function renderTradeLog() {
     let trades = DataStore.getTrades();
-    const search = document.getElementById('tradeSearch').value.toLowerCase();
-    const side = document.getElementById('sideFilter').value;
-    const result = document.getElementById('resultFilter').value;
+    const search = (document.getElementById('tradeSearch')?.value || '').toLowerCase();
+    const side = document.getElementById('sideFilter')?.value || '';
+    const result = document.getElementById('resultFilter')?.value || '';
 
     if (search) {
       trades = trades.filter(t =>
@@ -563,12 +555,12 @@ const App = (() => {
     const trades = DataStore.getTrades();
     const stats = Stats.compute(trades);
 
-    Charts.renderMonthlyPnl(stats.byMonth);
-    Charts.renderRMultiple(trades);
-    Charts.renderDrawdown(trades);
-    Charts.renderSymbolWinRate(stats.bySymbol);
-    Charts.renderDurationScatter(trades);
-    Charts.renderStreaks(trades);
+    try { Charts.renderMonthlyPnl(stats.byMonth); } catch(e) {}
+    try { Charts.renderRMultiple(trades); } catch(e) {}
+    try { Charts.renderDrawdown(trades); } catch(e) {}
+    try { Charts.renderSymbolWinRate(stats.bySymbol); } catch(e) {}
+    try { Charts.renderDurationScatter(trades); } catch(e) {}
+    try { Charts.renderStreaks(trades); } catch(e) {}
 
     // Advanced metrics grid
     const metrics = [
@@ -586,7 +578,8 @@ const App = (() => {
       { name: 'Gross Loss', val: UI.fmtCurrency(-stats.grossLoss) },
     ];
 
-    document.getElementById('metricsGrid').innerHTML = metrics.map(m => `
+    const mgEl = document.getElementById('metricsGrid');
+    if (mgEl) mgEl.innerHTML = metrics.map(m => `
       <div class="metric-item">
         <div class="metric-name">${m.name}</div>
         <div class="metric-val" style="${m.cls ? `color:var(--${m.cls})` : ''}">${m.val}</div>
@@ -614,7 +607,8 @@ const App = (() => {
     const month = calendarDate.getMonth();
     const monthNames = ['January','February','March','April','May','June',
                         'July','August','September','October','November','December'];
-    document.getElementById('calMonthLabel').textContent = `${monthNames[month]} ${year}`;
+    const cmlEl = document.getElementById('calMonthLabel');
+    if (cmlEl) cmlEl.textContent = `${monthNames[month]} ${year}`;
 
     const trades = DataStore.getTrades();
     const byDay = {};
@@ -659,7 +653,8 @@ const App = (() => {
       </div>`;
     }
 
-    document.getElementById('calendarGrid').innerHTML = html;
+    const cgEl = document.getElementById('calendarGrid');
+    if (cgEl) cgEl.innerHTML = html;
   }
 
   function showCalDay(day, year, month) {
@@ -781,10 +776,10 @@ const App = (() => {
         `${result.broker} — ${result.trades.length} trades detected${result.trades.length > 20 ? ` (showing first 20)` : ''}`;
 
       const thead = document.getElementById('previewThead');
-      thead.innerHTML = `<th>Date</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Commission</th>`;
+      if (thead) thead.innerHTML = `<th>Date</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Commission</th>`;
 
       const tbody = document.getElementById('previewTbody');
-      tbody.innerHTML = preview.map(t => `<tr>
+      if (tbody) tbody.innerHTML = preview.map(t => `<tr>
         <td>${UI.fmtDate(t.entryDate)}</td>
         <td><strong>${t.symbol}</strong></td>
         <td>${UI.sideBadge(t.side)}</td>
@@ -980,7 +975,7 @@ const App = (() => {
   }
 
   function renderNotesList() {
-    const search = document.getElementById('noteSearch').value.toLowerCase();
+    const search = (document.getElementById('noteSearch')?.value || '').toLowerCase();
     let notes = DataStore.getNotes();
 
     if (search) {
@@ -1098,6 +1093,9 @@ const App = (() => {
     calcManualPnl,
     clearManualForm,
     openBalanceModal,
+    closeBalanceModal,
+    saveStartingBalance,
+    updateBalancePreview,
     signOut
   };
 })();
