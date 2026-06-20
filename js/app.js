@@ -63,6 +63,7 @@ const App = (() => {
     renderNotesList();
     updateBalancePill();
     updateUserMenu();
+    window.dispatchEvent(new CustomEvent('kf-trades-updated'));
   }
 
   // ── LOAD CLOUD DATA ───────────────────────────────────────
@@ -494,7 +495,8 @@ const App = (() => {
   function viewTrade(id) {
     const trade = DataStore.getTrades().find(t => t.id === id);
     if (!trade) return;
-    UI.openModal(`${trade.symbol} — ${UI.fmtDate(trade.entryDate)}`, UI.tradeDetailHtml(trade));
+    const html = UI.tradeDetailHtml(trade) + `<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)"><button class="btn-ai-analyze" onclick="AICoach.analyzeTrade(DataStore.getTrades().find(t=>t.id==='${id}'));UI.closeModal()">🤖 Analyze this trade with AI Coach</button></div>`;
+    UI.openModal(`${trade.symbol} — ${UI.fmtDate(trade.entryDate)}`, html);
   }
 
   function editTrade(id) {
@@ -534,6 +536,7 @@ const App = (() => {
     if (CloudStore.isOnline()) CloudStore.deleteTrade(id);
     UI.toast('Trade deleted', 'warn');
     refreshDashboard();
+    window.dispatchEvent(new CustomEvent('kf-trades-updated'));
     if (currentPage === 'trades') renderTradeLog();
     if (currentPage === 'analytics') renderAnalytics();
     if (currentPage === 'calendar') renderCalendar();
@@ -803,6 +806,7 @@ const App = (() => {
     document.getElementById('previewSection').style.display = 'none';
     refreshDashboard();
     updateBalancePill();
+    window.dispatchEvent(new CustomEvent('kf-trades-updated'));
   }
 
   // ── MANUAL FORM ──────────────────────────────────────────
@@ -937,6 +941,7 @@ const App = (() => {
     clearManualForm();
     refreshDashboard();
     updateBalancePill();
+    window.dispatchEvent(new CustomEvent('kf-trades-updated'));
   }
 
   // ── NOTES ────────────────────────────────────────────────
