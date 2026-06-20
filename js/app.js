@@ -227,11 +227,14 @@ const App = (() => {
 
     // ── Balance pill — click to open settings ────────────
     // balancePill click handled via HTML onclick attribute
-    document.getElementById('balanceModalClose')?.addEventListener('click', closeBalanceModal);
-    document.getElementById('saveBalanceBtn')?.addEventListener('click', saveStartingBalance);
-    document.getElementById('balanceModal')?.addEventListener('click', (e) => {
-      if (e.target === e.currentTarget) closeBalanceModal();
-    });
+    const _bmc  = document.getElementById('balanceModalClose');
+    const _bsb  = document.getElementById('saveBalanceBtn');
+    const _bmo  = document.getElementById('balanceModal');
+    const _bsi  = document.getElementById('startingBalanceInput');
+    if (_bmc) _bmc.onclick = closeBalanceModal;
+    if (_bsb) _bsb.onclick = saveStartingBalance;
+    if (_bmo) _bmo.onclick = (e) => { if (e.target === _bmo) closeBalanceModal(); };
+    if (_bsi) _bsi.oninput = updateBalancePreview;
 
     // Live preview as user types
     document.getElementById('startingBalanceInput')?.addEventListener('input', updateBalancePreview);
@@ -298,41 +301,53 @@ const App = (() => {
   // ── BALANCE MODAL ─────────────────────────────────────
   function openBalanceModal() {
     const settings = DataStore.getSettings();
+    const modal    = document.getElementById('balanceModal');
     const input    = document.getElementById('startingBalanceInput');
-    input.value    = settings.accountBalance || 10000;
+    if (!modal) { console.warn('balanceModal not found'); return; }
+    if (input) {
+      input.value = settings.accountBalance || 10000;
+    }
     updateBalancePreview();
-    document.getElementById('balanceModal').style.display = 'flex';
-    input.focus();
-    input.select();
+    modal.style.display = 'flex';
+    setTimeout(() => { if (input) { input.focus(); input.select(); } }, 50);
   }
 
   function closeBalanceModal() {
-    document.getElementById('balanceModal').style.display = 'none';
+    const modal = document.getElementById('balanceModal');
+    if (modal) modal.style.display = 'none';
   }
 
   function updateBalancePreview() {
-    const val    = parseFloat(document.getElementById('startingBalanceInput').value) || 0;
+    const inputEl  = document.getElementById('startingBalanceInput');
+    const startEl  = document.getElementById('bm_starting');
+    const pnlEl    = document.getElementById('bm_pnl');
+    const currEl   = document.getElementById('bm_current');
+    if (!inputEl || !startEl || !pnlEl || !currEl) return;
+
+    const val    = parseFloat(inputEl.value) || 0;
     const trades = DataStore.getTrades();
     const netPnl = trades.reduce((s, t) => s + (t.pnl || 0), 0);
     const curr   = val + netPnl;
     const fmt    = (n) => (n >= 0 ? '+$' : '-$') + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
     const fmtAbs = (n) => '$' + n.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
 
-    document.getElementById('bm_starting').textContent  = fmtAbs(val);
-    const pnlEl = document.getElementById('bm_pnl');
-    pnlEl.textContent = fmt(netPnl);
-    pnlEl.style.color = netPnl >= 0 ? 'var(--green)' : 'var(--red)';
-    document.getElementById('bm_current').textContent   = fmtAbs(curr);
+    startEl.textContent  = fmtAbs(val);
+    pnlEl.textContent    = fmt(netPnl);
+    pnlEl.style.color    = netPnl >= 0 ? 'var(--green)' : 'var(--red)';
+    currEl.textContent   = fmtAbs(curr);
   }
 
   function saveStartingBalance() {
-    const val = parseFloat(document.getElementById('startingBalanceInput').value);
+    const inputEl = document.getElementById('startingBalanceInput');
+    if (!inputEl) return;
+    const val = parseFloat(inputEl.value);
     if (isNaN(val) || val < 0) { UI.toast('Enter a valid amount', 'error'); return; }
     DataStore.saveSettings({ accountBalance: val });
     if (CloudStore.isOnline()) CloudStore.saveSettings(DataStore.getSettings());
     updateBalancePill();
     closeBalanceModal();
-    UI.toast('Balance updated ✓', 'success');
+    UI.toast('✓ Balance saved: $' + val.toLocaleString('en-US', {minimumFractionDigits:2}), 'success');
+    window.dispatchEvent(new CustomEvent('kf-trades-updated'));
   }
 
   // ── DASHBOARD ────────────────────────────────────────────
