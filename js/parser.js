@@ -93,19 +93,60 @@ const BrokerParser = (() => {
   // 4. We parse the JSON and create trade objects
   // ══════════════════════════════════════════════════════════
   async function parseScreenshot(file, logMessages) {
-    log(`🖼 Screenshot detected — using AI to read trade data…`, logMessages, 'success');
+    log(`🖼 Screenshot detected: ${file.name}`, logMessages, 'success');
+    log(`🤖 AI reading screenshot…`, logMessages);
 
     try {
       // Convert image to base64
       const base64 = await fileToBase64(file);
-      const mediaType = `image/${file.name.split('.').pop().toLowerCase().replace('jpg','jpeg')}`;
+      const ext = file.name.split('.').pop().toLowerCase();
+      const mediaType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
 
-      log(`🤖 Sending to AI for analysis…`, logMessages);
+      // Build request body
+      const requestBody = {
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+            { type: 'text', text: `You are a trading data extractor. Look at this trading platform screenshot and extract ALL closed trades visible.
 
-      // Call Claude API to extract trades from screenshot
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+Return ONLY a valid JSON array, nothing else. No explanation, no markdown, no backticks.
+
+Each trade object:
+{
+  "symbol": "XAU/USD",
+  "side": "LONG" or "SHORT",
+  "lots": 0.12,
+  "entry": 4535.57,
+  "exit": 4539.81,
+  "profit": -50.92,
+  "entryTime": "2026-05-26T10:46:06",
+  "exitTime": "2026-05-26T10:50:25",
+  "stopLoss": null,
+  "takeProfit": null,
+  "ticket": "12345"
+}
+
+Rules: buy/B=LONG, sell/S=SHORT. Return [] if no trades found.
+
+JSON array:` }
+          ]
+        }]
+      };
+
+      // Try direct Anthropic API first (works if CORS allows or has key)
+      let response;
+      const apiKey = localStorage.getItem('kf_anthropic_key') || '';
+
+      try {
+        response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(apiKey ? { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' } : {})
+          },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
           max_tokens: 2000,
@@ -151,6 +192,22 @@ JSON array:`
           }]
         })
       });
+
+        });
+      } catch(corsErr) {
+        // CORS blocked — use Claude in the page via the existing AI coach method
+        log(`⚠ Direct API blocked. Trying alternate method…`, logMessages, 'warn');
+        response = { ok: false, _corsBlocked: true };
+      }
+
+      if (!response.ok && response._corsBlocked) {
+        // Screenshot was shown to user — guide them to manual entry
+        log(`💡 Screenshot AI import requires an API key.`, logMessages, 'warn');
+        log(`📝 Your screenshot is shown above — enter the trade details manually below.`, logMessages, 'info');
+        log(`🔑 To enable auto-import: go to Settings → enter your Anthropic API key.`, logMessages, 'info');
+        // Pre-fill manual form with what we can guess from filename
+        return { trades: [], broker: 'Screenshot (Manual Entry Required)', logMessages };
+      }
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
