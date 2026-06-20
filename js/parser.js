@@ -62,6 +62,9 @@ const BrokerParser = (() => {
     } else if (ext === 'xlsx' || ext === 'xls') {
       rows = await parseXLSX(file);
       log(`✓ Parsed XLSX: ${rows.length} rows`, logMessages);
+    } else if (['png','jpg','jpeg','webp','gif','bmp'].includes(ext)) {
+      // Image/screenshot — route to AI vision parser
+      return parseScreenshot(file, logMessages);
     } else {
       throw new Error(`Unsupported file type: .${ext}. Use CSV, XLSX, or TXT.`);
     }
@@ -104,7 +107,7 @@ const BrokerParser = (() => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
+          model: 'claude-sonnet-4-6',
           max_tokens: 2000,
           messages: [{
             role: 'user',
