@@ -94,30 +94,43 @@ const BrokerParser = (() => {
   // ══════════════════════════════════════════════════════════
   async function parseScreenshot(file, logMessages) {
     log(`🖼 Screenshot detected: ${file.name}`, logMessages, 'success');
-    log(`🤖 AI reading screenshot…`, logMessages);
 
     try {
-      // Convert image to base64
       const base64 = await fileToBase64(file);
       const ext = file.name.split('.').pop().toLowerCase();
       const mediaType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
 
-      // Build request body
+      const apiKey = localStorage.getItem('kf_anthropic_key') || '';
+
+      if (!apiKey) {
+        log(`⚠ Screenshot AI import requires an Anthropic API key.`, logMessages, 'warn');
+        log(`📝 Go to Settings → AI Features → enter your API key, then retry.`, logMessages, 'info');
+        log(`✏ Or enter the trade details manually in the form below.`, logMessages, 'info');
+        return { trades: [], broker: 'Screenshot (API Key Required)', logMessages };
+      }
+
+      log(`🤖 AI is reading your screenshot…`, logMessages);
+
       const requestBody = {
         model: 'claude-sonnet-4-6',
         max_tokens: 2000,
         messages: [{
           role: 'user',
           content: [
-            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-            { type: 'text', text: `You are a trading data extractor. Look at this trading platform screenshot and extract ALL closed trades visible.
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: mediaType, data: base64 }
+            },
+            {
+              type: 'text',
+              text: `You are a trading data extractor. Look at this trading platform screenshot and extract ALL closed trades visible.
 
 Return ONLY a valid JSON array, nothing else. No explanation, no markdown, no backticks.
 
 Each trade object:
 {
   "symbol": "XAU/USD",
-  "side": "LONG" or "SHORT",
+  "side": "LONG",
   "lots": 0.12,
   "entry": 4535.57,
   "exit": 4539.81,
@@ -131,113 +144,63 @@ Each trade object:
 
 Rules: buy/B=LONG, sell/S=SHORT. Return [] if no trades found.
 
-JSON array:` }
+JSON array:`
+            }
           ]
         }]
       };
 
-      // Try direct Anthropic API first (works if CORS allows or has key)
       let response;
-      const apiKey = localStorage.getItem('kf_anthropic_key') || '';
-
       try {
         response = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(apiKey ? { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' } : {})
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01'
           },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 2000,
-          messages: [{
-            role: 'user',
-            content: [
-              {
-                type: 'image',
-                source: { type: 'base64', media_type: mediaType, data: base64 }
-              },
-              {
-                type: 'text',
-                text: `You are a trading data extractor. Look at this trading platform screenshot and extract ALL closed trades you can see.
-
-Return ONLY a valid JSON array, nothing else. No explanation, no markdown, no backticks.
-
-Each trade object must have these fields (use null if not visible):
-{
-  "symbol": "XAU/USD",
-  "side": "LONG" or "SHORT" (buy=LONG, sell=SHORT),
-  "lots": 0.12,
-  "entry": 4535.57,
-  "exit": 4539.81,
-  "profit": -50.92,
-  "entryTime": "2026-05-26T10:46:06",
-  "exitTime": "2026-05-26T10:50:25",
-  "stopLoss": null,
-  "takeProfit": null,
-  "ticket": "12345"
-}
-
-Rules:
-- side: if you see "buy" or "B" = "LONG", if "sell" or "S" = "SHORT"
-- profit: include the sign (negative for loss)
-- symbol: normalize to format like XAU/USD, EUR/USD
-- If multiple trades visible, include all of them
-- If a field is not visible, use null
-- Return [] if no trades found
-
-JSON array:`
-              }
-            ]
-          }]
-        })
-      });
-
+          body: JSON.stringify(requestBody)
         });
-      } catch(corsErr) {
-        // CORS blocked — use Claude in the page via the existing AI coach method
-        log(`⚠ Direct API blocked. Trying alternate method…`, logMessages, 'warn');
-        response = { ok: false, _corsBlocked: true };
-      }
-
-      if (!response.ok && response._corsBlocked) {
-        // Screenshot was shown to user — guide them to manual entry
-        log(`💡 Screenshot AI import requires an API key.`, logMessages, 'warn');
-        log(`📝 Your screenshot is shown above — enter the trade details manually below.`, logMessages, 'info');
-        log(`🔑 To enable auto-import: go to Settings → enter your Anthropic API key.`, logMessages, 'info');
-        // Pre-fill manual form with what we can guess from filename
-        return { trades: [], broker: 'Screenshot (Manual Entry Required)', logMessages };
+      } catch (networkErr) {
+        log(`✗ Network error: ${networkErr.message}`, logMessages, 'error');
+        log(`💡 Check your internet connection and API key in Settings.`, logMessages, 'warn');
+        return { trades: [], broker: 'Screenshot (Network Error)', logMessages };
       }
 
       if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(`AI API error: ${err.error?.message || response.status}`);
+        let errMsg = `API error ${response.status}`;
+        try {
+          const errData = await response.json();
+          errMsg = errData.error?.message || errMsg;
+        } catch(e) {}
+        log(`✗ ${errMsg}`, logMessages, 'error');
+        if (response.status === 401) {
+          log(`🔑 Invalid API key. Check Settings → AI Features.`, logMessages, 'warn');
+        }
+        return { trades: [], broker: 'Screenshot (API Error)', logMessages };
       }
 
       const data = await response.json();
       const text = data.content?.[0]?.text || '[]';
-
       log(`✓ AI response received`, logMessages, 'success');
 
-      // Parse the JSON response
       let extracted = [];
       try {
-        // Clean up response — remove any markdown if AI added it
-        const clean = text.replace(/```json|```/g, '').trim();
+        const clean = text.replace(/\`\`\`json|\`\`\`/g, '').trim();
         extracted = JSON.parse(clean);
         if (!Array.isArray(extracted)) extracted = [extracted];
       } catch (e) {
-        throw new Error(`AI could not parse trades from screenshot. Try a clearer image.`);
+        log(`✗ Could not parse AI response. Try a clearer screenshot.`, logMessages, 'error');
+        return { trades: [], broker: 'Screenshot (Parse Error)', logMessages };
       }
 
       if (!extracted.length) {
-        log(`⚠ No trades found in screenshot`, logMessages, 'warn');
+        log(`⚠ No trades found in screenshot. Make sure trade history is visible.`, logMessages, 'warn');
         return { trades: [], broker: 'Screenshot (AI)', logMessages };
       }
 
-      log(`✓ AI found ${extracted.length} trade(s) in screenshot`, logMessages, 'success');
+      log(`✓ AI found ${extracted.length} trade(s)`, logMessages, 'success');
 
-      // Convert extracted data to trade objects
       const trades = [];
       for (const t of extracted) {
         try {
@@ -248,8 +211,8 @@ JSON array:`
             qty:        parseFloat(t.lots) || 0.01,
             entry:      parseFloat(t.entry) || 0,
             exit:       parseFloat(t.exit)  || 0,
-            pnl:        t.profit !== null ? parseFloat(t.profit) : undefined,
-            stop:       t.stopLoss ? parseFloat(t.stopLoss) : undefined,
+            pnl:        t.profit !== null && t.profit !== undefined ? parseFloat(t.profit) : undefined,
+            stop:       t.stopLoss   ? parseFloat(t.stopLoss)   : undefined,
             tp:         t.takeProfit ? parseFloat(t.takeProfit) : undefined,
             commission: 0,
             entryDate:  t.entryTime ? new Date(t.entryTime).toISOString() : new Date().toISOString(),
@@ -257,20 +220,21 @@ JSON array:`
             notes:      `Screenshot import${t.ticket ? ' | Ticket: ' + t.ticket : ''}`,
             tags:       ['screenshot', 'ai-import']
           });
-          if (trade.symbol) trades.push(trade);
-          log(`  → ${trade.symbol} ${trade.side} ${trade.qty}L | P&L: $${trade.pnl}`, logMessages, 'success');
+          if (trade.symbol) {
+            trades.push(trade);
+            log(`  → ${trade.symbol} ${trade.side} ${trade.qty}L | P&L: $${(trade.pnl||0).toFixed(2)}`, logMessages, 'success');
+          }
         } catch (e) {}
       }
 
       return { trades, broker: 'Screenshot (AI Vision)', logMessages };
 
     } catch (e) {
-      log(`✗ Screenshot parse failed: ${e.message}`, logMessages, 'error');
-      log(`💡 Tip: Use a clear screenshot showing trade history table`, logMessages, 'warn');
-      throw e;
+      log(`✗ Screenshot import failed: ${e.message}`, logMessages, 'error');
+      log(`💡 Try a clearer screenshot showing the trade history table.`, logMessages, 'warn');
+      return { trades: [], broker: 'Screenshot (Error)', logMessages };
     }
   }
-
   // Convert File to base64 string
   function fileToBase64(file) {
     return new Promise((res, rej) => {
