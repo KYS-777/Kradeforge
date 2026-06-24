@@ -150,23 +150,12 @@ const App = (() => {
     const sidebar        = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-    function openSidebar() {
-      if (typeof KF !== 'undefined' && KF.setSidebar) { KF.setSidebar(true); }
-      else { sidebar.classList.add('open'); sidebarOverlay.classList.add('show'); }
-      document.body.style.overflow = window.innerWidth < 768 ? 'hidden' : '';
-    }
-    function closeSidebar() {
-      if (typeof KF !== 'undefined' && KF.setSidebar) { KF.setSidebar(false); }
-      else { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('show'); }
-      document.body.style.overflow = '';
-    }
+    const openSidebar  = () => { if (typeof KF !== 'undefined') KF.setSidebar(true); };
+    const closeSidebar = () => { if (typeof KF !== 'undefined') KF.setSidebar(false); };
 
-    document.getElementById('hamburger')?.addEventListener('click', () => {
-      (sidebar.classList.contains('open') || sidebar.classList.contains('expanded')) ? closeSidebar() : openSidebar();
-    });
+    // hamburger toggle handled by KF.init - do not rebind here
 
-    // Close when tapping overlay (safe)
-    sidebarOverlay?.addEventListener('click', closeSidebar);
+    // sidebarOverlay handled by KF.init
 
     // Close sidebar when navigating on mobile
     document.querySelectorAll('.nav-item').forEach(item => {
