@@ -100,16 +100,10 @@ const BrokerParser = (() => {
       const ext = file.name.split('.').pop().toLowerCase();
       const mediaType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
 
+      // Use user's own key if set, otherwise try without (will fail gracefully)
       const apiKey = localStorage.getItem('kf_anthropic_key') || '';
 
-      if (!apiKey) {
-        log(`⚠ Screenshot AI import requires an Anthropic API key.`, logMessages, 'warn');
-        log(`📝 Go to Settings → AI Features → enter your API key, then retry.`, logMessages, 'info');
-        log(`✏ Or enter the trade details manually in the form below.`, logMessages, 'info');
-        return { trades: [], broker: 'Screenshot (API Key Required)', logMessages };
-      }
-
-      log(`🤖 AI is reading your screenshot…`, logMessages);
+      log(`🤖 AI is analyzing your screenshot…`, logMessages);
 
       const requestBody = {
         model: 'claude-sonnet-4-6',
@@ -154,17 +148,17 @@ JSON array:`
       try {
         response = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01'
-          },
+          headers: Object.assign(
+            { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01' },
+            apiKey ? { 'x-api-key': apiKey } : {}
+          ),
           body: JSON.stringify(requestBody)
         });
       } catch (networkErr) {
-        log(`✗ Network error: ${networkErr.message}`, logMessages, 'error');
-        log(`💡 Check your internet connection and API key in Settings.`, logMessages, 'warn');
-        return { trades: [], broker: 'Screenshot (Network Error)', logMessages };
+        log(`⚠ Unable to analyze screenshot automatically.`, logMessages, 'warn');
+        log(`💡 To enable AI screenshot import: go to Settings → AI Features → add your Anthropic API key.`, logMessages, 'info');
+        log(`✏ You can enter the trade details manually below.`, logMessages, 'info');
+        return { trades: [], broker: 'Manual Entry Required', logMessages };
       }
 
       if (!response.ok) {
@@ -175,9 +169,12 @@ JSON array:`
         } catch(e) {}
         log(`✗ ${errMsg}`, logMessages, 'error');
         if (response.status === 401) {
-          log(`🔑 Invalid API key. Check Settings → AI Features.`, logMessages, 'warn');
+          log(`🔑 No API key set. Go to Settings → AI Features → enter your Anthropic API key.`, logMessages, 'warn');
+          log(`✏ Enter the trade details manually in the form below.`, logMessages, 'info');
+        } else {
+          log(`💡 Try uploading a clearer screenshot or use manual entry below.`, logMessages, 'info');
         }
-        return { trades: [], broker: 'Screenshot (API Error)', logMessages };
+        return { trades: [], broker: 'Manual Entry Required', logMessages };
       }
 
       const data = await response.json();
