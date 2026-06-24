@@ -94,16 +94,24 @@ const BrokerParser = (() => {
   // ══════════════════════════════════════════════════════════
   async function parseScreenshot(file, logMessages) {
     log(`🖼 Screenshot detected: ${file.name}`, logMessages, 'success');
+    log(`🤖 AI is analyzing your screenshot…`, logMessages);
+
+    const apiKey = localStorage.getItem('kf_anthropic_key') || '';
+
+    // Show screenshot preview in the drop zone
+    try {
+      const previewEl = document.getElementById('screenshotPreview');
+      const imgEl     = document.getElementById('screenshotImg');
+      if (previewEl && imgEl) {
+        imgEl.src = URL.createObjectURL(file);
+        previewEl.style.display = 'block';
+      }
+    } catch(e) {}
 
     try {
-      const base64 = await fileToBase64(file);
-      const ext = file.name.split('.').pop().toLowerCase();
+      const base64    = await fileToBase64(file);
+      const ext       = file.name.split('.').pop().toLowerCase();
       const mediaType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
-
-      // Use user's own key if set, otherwise try without (will fail gracefully)
-      const apiKey = localStorage.getItem('kf_anthropic_key') || '';
-
-      log(`🤖 AI is analyzing your screenshot…`, logMessages);
 
       const requestBody = {
         model: 'claude-sonnet-4-6',
@@ -111,13 +119,8 @@ const BrokerParser = (() => {
         messages: [{
           role: 'user',
           content: [
-            {
-              type: 'image',
-              source: { type: 'base64', media_type: mediaType, data: base64 }
-            },
-            {
-              type: 'text',
-              text: `You are a trading data extractor. Look at this trading platform screenshot and extract ALL closed trades visible.
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+            { type: 'text', text: `You are a trading data extractor. Look at this trading platform screenshot and extract ALL closed trades visible in the trade history table.
 
 Return ONLY a valid JSON array, nothing else. No explanation, no markdown, no backticks.
 
@@ -125,110 +128,148 @@ Each trade object:
 {
   "symbol": "XAU/USD",
   "side": "LONG",
-  "lots": 0.12,
-  "entry": 4535.57,
-  "exit": 4539.81,
+  "lots": 0.07,
+  "entry": 4214.376,
+  "exit": 4214.370,
   "profit": -50.92,
-  "entryTime": "2026-05-26T10:46:06",
-  "exitTime": "2026-05-26T10:50:25",
+  "entryTime": "2026-06-10T11:47:48",
+  "exitTime": "2026-06-10T13:57:14",
   "stopLoss": null,
   "takeProfit": null,
-  "ticket": "12345"
+  "ticket": "3890443921"
 }
 
-Rules: buy/B=LONG, sell/S=SHORT. Return [] if no trades found.
+Rules:
+- buy/Buy/B = "LONG", sell/Sell/S = "SHORT"
+- profit: include sign (negative = loss)
+- symbol: normalize to XAU/USD, EUR/USD etc
+- Include ALL rows visible in the table
+- Return [] if no trade table visible
 
-JSON array:`
-            }
+JSON array:` }
           ]
         }]
       };
 
-      let response;
-      try {
-        response = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: Object.assign(
-            { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01' },
-            apiKey ? { 'x-api-key': apiKey } : {}
-          ),
-          body: JSON.stringify(requestBody)
+      // Try: 1) User's own API key direct, 2) Supabase proxy, 3) Friendly error
+      const attempts = [];
+
+      if (apiKey) {
+        attempts.push({
+          url: 'https://api.anthropic.com/v1/messages',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01'
+          }
         });
-      } catch (networkErr) {
-        log(`⚠ Unable to analyze screenshot automatically.`, logMessages, 'warn');
-        log(`💡 To enable AI screenshot import: go to Settings → AI Features → add your Anthropic API key.`, logMessages, 'info');
-        log(`✏ You can enter the trade details manually below.`, logMessages, 'info');
-        return { trades: [], broker: 'Manual Entry Required', logMessages };
       }
 
-      if (!response.ok) {
-        let errMsg = `API error ${response.status}`;
-        try {
-          const errData = await response.json();
-          errMsg = errData.error?.message || errMsg;
-        } catch(e) {}
-        log(`✗ ${errMsg}`, logMessages, 'error');
-        if (response.status === 401) {
-          log(`🔑 No API key set. Go to Settings → AI Features → enter your Anthropic API key.`, logMessages, 'warn');
-          log(`✏ Enter the trade details manually in the form below.`, logMessages, 'info');
-        } else {
-          log(`💡 Try uploading a clearer screenshot or use manual entry below.`, logMessages, 'info');
+      // Supabase Edge Function proxy (deployed at this URL)
+      attempts.push({
+        url: 'https://zcqhfnzsmvmtzaphfmup.supabase.co/functions/v1/anthropic-proxy',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpjcWhmbnpzbXZtdHphcGhmbXVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNzU4NjUsImV4cCI6MjA5NjY1MTg2NX0.aNaph0fsdUpXgcV8OkDnHX5-mHybYaa1Z8MhXcJQVmc'
         }
-        return { trades: [], broker: 'Manual Entry Required', logMessages };
+      });
+
+      let responseData = null;
+
+      for (const attempt of attempts) {
+        try {
+          const res = await fetch(attempt.url, {
+            method: 'POST',
+            headers: attempt.headers,
+            body: JSON.stringify(requestBody)
+          });
+
+          if (res.ok) {
+            responseData = await res.json();
+            break;
+          } else if (res.status === 401) {
+            log(`🔑 API key invalid. Check Settings → AI Features.`, logMessages, 'warn');
+            break;
+          } else if (res.status === 404) {
+            // Proxy not deployed yet - try next
+            continue;
+          }
+        } catch (e) {
+          // Network error / CORS - try next
+          continue;
+        }
       }
 
-      const data = await response.json();
-      const text = data.content?.[0]?.text || '[]';
-      log(`✓ AI response received`, logMessages, 'success');
+      if (!responseData) {
+        log(`⚠ AI screenshot import is not available right now.`, logMessages, 'warn');
+        log(`💡 Option 1: Add your Anthropic API key in Settings → AI Features`, logMessages, 'info');
+        log(`💡 Option 2: Export your trades as CSV from your broker and import that instead`, logMessages, 'info');
+        log(`✏  Option 3: Enter the trade manually in the form below`, logMessages, 'info');
+        return { trades: [], broker: 'Screenshot (Manual Entry)', logMessages };
+      }
+
+      const text = responseData.content?.[0]?.text || '[]';
+      log(`✓ AI read your screenshot successfully`, logMessages, 'success');
 
       let extracted = [];
       try {
-        const clean = text.replace(/\`\`\`json|\`\`\`/g, '').trim();
-        extracted = JSON.parse(clean);
+        const clean = text.replace(/```json|```/g, '').trim();
+        const jsonStart = clean.indexOf('[');
+        const jsonEnd   = clean.lastIndexOf(']') + 1;
+        extracted = JSON.parse(clean.slice(jsonStart, jsonEnd));
         if (!Array.isArray(extracted)) extracted = [extracted];
       } catch (e) {
-        log(`✗ Could not parse AI response. Try a clearer screenshot.`, logMessages, 'error');
+        log(`⚠ Could not read trade data from screenshot.`, logMessages, 'warn');
+        log(`💡 Make sure the closed trades table is clearly visible in the screenshot.`, logMessages, 'info');
         return { trades: [], broker: 'Screenshot (Parse Error)', logMessages };
       }
 
       if (!extracted.length) {
-        log(`⚠ No trades found in screenshot. Make sure trade history is visible.`, logMessages, 'warn');
-        return { trades: [], broker: 'Screenshot (AI)', logMessages };
+        log(`⚠ No closed trades found in screenshot.`, logMessages, 'warn');
+        log(`💡 Make sure the "Closed" tab is selected and trade rows are visible.`, logMessages, 'info');
+        return { trades: [], broker: 'Screenshot (No Trades Found)', logMessages };
       }
 
-      log(`✓ AI found ${extracted.length} trade(s)`, logMessages, 'success');
+      log(`✓ Found ${extracted.length} trade(s) in screenshot`, logMessages, 'success');
 
       const trades = [];
       for (const t of extracted) {
         try {
           if (!t.symbol) continue;
           const trade = DataStore.enrichTrade({
-            symbol:     normalizeSymbol(t.symbol || ''),
-            side:       (t.side || 'LONG').toUpperCase(),
-            qty:        parseFloat(t.lots) || 0.01,
-            entry:      parseFloat(t.entry) || 0,
-            exit:       parseFloat(t.exit)  || 0,
-            pnl:        t.profit !== null && t.profit !== undefined ? parseFloat(t.profit) : undefined,
-            stop:       t.stopLoss   ? parseFloat(t.stopLoss)   : undefined,
-            tp:         t.takeProfit ? parseFloat(t.takeProfit) : undefined,
+            symbol:    normalizeSymbol(t.symbol || ''),
+            side:      String(t.side || 'LONG').toUpperCase().includes('S') ? 'SHORT' : 'LONG',
+            qty:       Math.abs(parseFloat(t.lots)) || 0.01,
+            entry:     parseFloat(t.entry) || 0,
+            exit:      parseFloat(t.exit)  || 0,
+            pnl:       t.profit !== undefined && t.profit !== null ? parseFloat(t.profit) : undefined,
+            stop:      t.stopLoss   ? parseFloat(t.stopLoss)   : undefined,
+            tp:        t.takeProfit ? parseFloat(t.takeProfit) : undefined,
             commission: 0,
             entryDate:  t.entryTime ? new Date(t.entryTime).toISOString() : new Date().toISOString(),
             exitDate:   t.exitTime  ? new Date(t.exitTime).toISOString()  : new Date().toISOString(),
-            notes:      `Screenshot import${t.ticket ? ' | Ticket: ' + t.ticket : ''}`,
+            notes:      `AI screenshot import${t.ticket ? ' | Ticket: ' + t.ticket : ''}`,
             tags:       ['screenshot', 'ai-import']
           });
           if (trade.symbol) {
             trades.push(trade);
-            log(`  → ${trade.symbol} ${trade.side} ${trade.qty}L | P&L: $${(trade.pnl||0).toFixed(2)}`, logMessages, 'success');
+            const pnlStr = trade.pnl !== undefined ? ` | P&L: $${parseFloat(trade.pnl).toFixed(2)}` : '';
+            log(`  ✓ ${trade.symbol} ${trade.side} ${trade.qty}L${pnlStr}`, logMessages, 'success');
           }
         } catch (e) {}
       }
 
-      return { trades, broker: 'Screenshot (AI Vision)', logMessages };
+      if (!trades.length) {
+        log(`⚠ Could not extract valid trade data.`, logMessages, 'warn');
+        return { trades: [], broker: 'Screenshot (No Valid Trades)', logMessages };
+      }
+
+      return { trades, broker: 'Screenshot AI (Exness MT5)', logMessages };
 
     } catch (e) {
-      log(`✗ Screenshot import failed: ${e.message}`, logMessages, 'error');
-      log(`💡 Try a clearer screenshot showing the trade history table.`, logMessages, 'warn');
+      log(`⚠ Screenshot analysis failed.`, logMessages, 'warn');
+      log(`💡 Try: Use CSV export from your broker instead.`, logMessages, 'info');
+      log(`✏  Or enter the trade manually below.`, logMessages, 'info');
       return { trades: [], broker: 'Screenshot (Error)', logMessages };
     }
   }
