@@ -133,9 +133,9 @@ body {
 .logo-sub { font-size: 7.5px; font-weight: 600; letter-spacing: 0.2em; color: var(--text3); text-transform: uppercase; white-space: nowrap; }
 
 /* Nav */
-.sidebar-nav { flex: 1; display: flex; flex-direction: column; padding: 10px 8px; gap: 2px; overflow-y: auto; overflow-x: hidden; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; padding: 8px 8px 4px; gap: 1px; overflow-y: auto; overflow-x: hidden; }
 .nav-group { display: flex; flex-direction: column; gap: 1px; margin-bottom: 4px; }
-.nav-group-bottom { margin-top: auto; }
+.nav-group-bottom { margin-top: 8px; }
 .nav-group-label {
   font-size: 9px; font-weight: 700; letter-spacing: 0.22em; color: var(--text3);
   text-transform: uppercase; padding: 12px 10px 5px;
