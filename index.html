@@ -137,8 +137,10 @@
   <!-- TOPBAR -->
   <header class="topbar">
     <div class="topbar-left">
-      <button class="hamburger" id="hamburger" aria-label="Toggle sidebar">
-        <span></span><span></span><span></span>
+      <button class="hamburger" id="hamburger" type="button" aria-label="Toggle sidebar">
+        <span></span>
+        <span></span>
+        <span></span>
       </button>
       <div class="topbar-breadcrumb">
         <span class="topbar-dot"></span>
@@ -922,9 +924,19 @@ const KF = (() => {
   function setSidebar(expanded) {
     _sidebarExpanded = expanded;
     localStorage.setItem('kf_sidebar', expanded ? 'expanded' : 'collapsed');
-    document.getElementById('sidebar').classList.toggle('expanded', expanded);
-    document.getElementById('mainWrap').classList.toggle('sidebar-expanded', expanded);
-    document.getElementById('hamburger').classList.toggle('open', expanded);
+    const sb  = document.getElementById('sidebar');
+    const mw  = document.getElementById('mainWrap');
+    const hb  = document.getElementById('hamburger');
+    const ov  = document.getElementById('sidebarOverlay');
+    if (sb)  sb.classList.toggle('expanded', expanded);
+    if (mw)  mw.classList.toggle('sidebar-expanded', expanded);
+    if (hb)  hb.classList.toggle('open', expanded);
+    if (ov)  ov.classList.toggle('open', expanded && window.innerWidth < 768);
+    if (expanded && window.innerWidth < 768) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
   }
 
   function openSettings()  { document.getElementById('settingsPanel').classList.add('open'); }
@@ -1039,9 +1051,14 @@ const KF = (() => {
     if (mobile) { setSidebar(false); }
     else { setSidebar(_sidebarExpanded); }
 
-    // Hamburger
-    document.getElementById('hamburger')?.addEventListener('click', () => setSidebar(!_sidebarExpanded));
-    document.getElementById('sidebarOverlay')?.addEventListener('click', () => setSidebar(false));
+    // Hamburger — single binding, uses _sidebarExpanded state
+    const _hb = document.getElementById('hamburger');
+    const _ov = document.getElementById('sidebarOverlay');
+    if (_hb) _hb.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setSidebar(!_sidebarExpanded);
+    });
+    if (_ov) _ov.addEventListener('click', () => setSidebar(false));
 
     // Auto close on mobile nav click
     document.querySelectorAll('.nav-item[data-page]').forEach(el => {
